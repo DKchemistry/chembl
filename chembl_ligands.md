@@ -14,7 +14,7 @@ Some things I think are relevant but not critical, inexhaustive:
 >
 >Chemical probes are highly selective modulators of drug discovery relevant targets, which can serve as valuable tools to help decipher target biology (38). To allow easier tracking of a probe's publication history, we flag chemical probes within a new field in the MOLECULE_DICTIONARY named CHEMICAL_PROBE. This indicates whether the compound is a chemical probe as defined by chemicalprobes.org (1 = yes, 0 = default value). The dataset of chemical probes was retrieved from the chemicalprobes.org website and filtered for probes that were assigned an In Vivo Rating or In Cell Rating of 3 stars or more. The annotations will be updated with every new ChEMBL release and other sources of information for defining a chemical probe may be added in the future. ChEMBL release 33 currently includes 388 molecules flagged as chemical probes.
 
-Typically speaking, chemical probes are a "step above" a known active compound from a reupatable source, but a step below a drug (for a variety of reasons - often related to the inability to develop the probe further). The criteria for something being a 'probe' are rarely exact. 
+Typically speaking, chemical probes are a "step above" a known active compound from a reputable source, but a step below a drug (for a variety of reasons - often related to the inability to develop the probe further). The criteria for something being a 'probe' are rarely exact. 
 
 >4 stars = Recommended as a probe for this target  
 >3 stars = Best available probe for this target, or a high-quality probe that is a useful orthogonal tool  
@@ -22,7 +22,7 @@ Typically speaking, chemical probes are a "step above" a known active compound f
 >1 star = Not recommended as a probe for this target  
 >The Chemical Probes Portal only endorses compounds as chemical probes for use as specific and selective modulators of the proposed target if they receive three or more (3-4) stars.  
 
-To me, a probe is a target with known target engagement and known activity (we know it interacts with the target, we know it has an *in vitro*/*in vivo* effect that is *driven* by interaction). I generally agree with whats written here. [Chemical Probes (Classical Modulators) Criteria
+To me, a probe is a ligand with known target engagement and known activity (we know it interacts with the target, we know it has an *in vitro*/*in vivo* effect that is *driven* by interaction). Associating target engagement with functional response is decidedly harder than how it may seem. I generally agree with whats written here. [Chemical Probes (Classical Modulators) Criteria
 ](https://www.chemicalprobes.org/info/classical-modulators). 
 
 I go through this all to say: retaining high quality probes via docking can be considered is a great sign for screening related outcomes. 
@@ -33,7 +33,7 @@ https://www.ebi.ac.uk/training/events/guide-explore-drug-compounds-and-their-bio
 
 ## Thoughts on ligand criteria for our use case 
 
-We want to get a set of active and inactive ligands that match some quality critera. We have seen the lit-pcba approach that used PubChem, that included for the actives/inactives, (essentially): 
+We want to get a set of active and inactive ligands that match some quality criteria. We have seen the lit-pcba approach that used PubChem, that included for the actives/inactives, (essentially): 
 
 ### LIT PCBA Ligand Selection (PubChem)
 
@@ -41,7 +41,7 @@ We want to get a set of active and inactive ligands that match some quality crit
    - Exclude molecules with atoms outside the typical organic range: H, C, N, O, P, S, F, Cl, Br, I.
 
 2. **False Positives Reduction (For Actives Only):**
-   - **Hill Slope Criteria:** Keep compounds with 0.5 < Hill slope < 2.0, at a high leve this means how biologically reasonable the curve is.
+   - **Hill Slope Criteria:** Keep compounds with 0.5 < Hill slope < 2.0, at a high level this means how biologically reasonable the curve is.
    - **Frequency of Hitting (FoH) Threshold:** Exclude compounds with FoH > 0.26.
    - **Specific Assay Filters:** Eliminate compounds flagged for aggregation, autofluorescence, or luciferase inhibition.
 
@@ -53,7 +53,7 @@ We want to get a set of active and inactive ligands that match some quality crit
    - Total formal charge: -2.0 < Charge < +2.0
 
    
-I like this approach overall as it does make the screens very difficult (I like the Hill Slope metric a lot). Thomas' thinks it may have been too restrictive. The other issue is that it doesn't really do anything about picking PDB templates with any real specifics beyond that they literally exist. For instance, the Beta2 set includes covalent agonist bound structures, which may not perform well. It included structures with multiple cocrystallized ligands ("allosteric modulators") but did not try to seperate the ligands to a particular binding site (this is more or less impossible to do without essentially having probe like quality). I'm not sure what they should have done, but the combination of being strict with your actives and the fact the actives may not even be suited to the protein binding site examined may present an overly pessimistic view. 
+I like this approach overall as it does make the screens very difficult (I like the Hill Slope metric a lot). Thomas' thinks it may have been too restrictive. The other issue is that it doesn't really do anything about picking PDB templates with any real specifics beyond that they literally exist. For instance, the Beta2 set includes covalent agonist bound structures, which may not perform well. It included structures with multiple cocrystallized ligands ("allosteric modulators") but did not try to separate the ligands to a particular binding site (this is more or less impossible to do without essentially having probe like quality). I'm not sure what they should have done, but the combination of being strict with your actives and the fact the actives may not even be suited to the protein binding site examined may present an overly pessimistic view. 
 
 There are some papers in the GPCR field that might be useful for us, this one uses ChEMBL and provides some nice commentary and analysis: 
 
