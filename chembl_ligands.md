@@ -22,7 +22,7 @@ Typically speaking, chemical probes are a "step above" a known active compound f
 >1 star = Not recommended as a probe for this target  
 >The Chemical Probes Portal only endorses compounds as chemical probes for use as specific and selective modulators of the proposed target if they receive three or more (3-4) stars.  
 
-To me, a probe is a ligand with known target engagement and known activity (we know it interacts with the target, we know it has an *in vitro*/*in vivo* effect that is *driven* by interaction). Associating target engagement with functional response is decidedly harder than how it may seem. I generally agree with whats written here. [Chemical Probes (Classical Modulators) Criteria
+To me, a probe is a ligand with known target engagement and known activity (we know it interacts with the target, we know it has an *in vitro*/*in vivo* effect that is *driven* by interaction). Associating target engagement with functional response is decidedly harder than how it may seem. I generally agree with what's written here. [Chemical Probes (Classical Modulators) Criteria
 ](https://www.chemicalprobes.org/info/classical-modulators). 
 
 I go through this all to say: retaining high quality probes via docking can be considered is a great sign for screening related outcomes. 
