@@ -355,7 +355,7 @@ Here is the query just in case:
 }
 ```
 
-I can apply this same sort of logic to whatever GPCRs we want. As long as Thomas agrees we should be fine. In the morning we can discuss 
+I can apply this same sort of logic to whatever GPCRs we want. As long as Thomas agrees we should be fine. In the morning we can discuss
 
 1. Decoys or known inactives? Both?
 2. What ratio of actives/inactives? 
