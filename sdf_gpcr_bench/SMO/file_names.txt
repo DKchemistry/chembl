@@ -1,0 +1,4 @@
+SMO.zip
+SMO_chembl19_set_active.smi
+SMO_chembl19_set_decoy.smi
+SMO_chembl19_set.smi

@@ -1,0 +1,8 @@
+GRIDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/GPR40/GPR40.zip
+LIGANDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/GPR40/GPR40_chembl19_set_decoy.smi
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True

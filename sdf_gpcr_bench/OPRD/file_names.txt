@@ -1,0 +1,4 @@
+OPRD.zip
+OPRD_chembl19_set_active.smi
+OPRD_chembl19_set.smi
+OPRD_chembl19_set_decoy.smi

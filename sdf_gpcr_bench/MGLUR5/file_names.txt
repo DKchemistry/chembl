@@ -1,0 +1,4 @@
+MGLUR5.zip
+MGLUR5_chembl19_set_decoy.smi
+MGLUR5_chembl19_set.smi
+MGLUR5_chembl19_set_active.smi

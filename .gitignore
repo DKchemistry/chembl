@@ -1,10 +1,10 @@
-chembl_queries/
-icm/
-litpcba/
-rip_grep_test/
-zip/
 # Ignore everything
 *
+
+# Except directory structure; this allows Git to traverse directories
+!**/
+# But ignore directory content; this prevents adding unwanted files
+!**/
 
 # Whitelist specific file types across all directories
 !**/*.py

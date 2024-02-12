@@ -1,0 +1,4 @@
+PAR1.zip
+PAR1_chembl19_set_decoy.smi
+PAR1_chembl19_set_active.smi
+PAR1_chembl19_set.smi
