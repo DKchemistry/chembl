@@ -1,0 +1,4 @@
+ACM3.zip
+ACM3_chembl19_set_decoy.smi
+ACM3_chembl19_set_active.smi
+ACM3_chembl19_set.smi

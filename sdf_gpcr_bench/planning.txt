@@ -1,0 +1,107 @@
+I want to automate the writing of files based on set of conditions. From the current working directory I have subdirectories containing subdirectories called 'stereochemistry'. In 'stereochemistry', I have files ending in 'active_sc.smi' and 'decoy_sc.smi. We can find them like so: 
+
+find */stereochemistry/* -name "*.smi" -print
+
+Here are is the tail of that output: 
+
+S1PR1/stereochemistry/S1PR1_chembl19_set_active_sc.smi
+S1PR1/stereochemistry/S1PR1_chembl19_set_decoy_sc.smi
+SMO/stereochemistry/SMO_chembl19_set_active_sc.smi
+SMO/stereochemistry/SMO_chembl19_set_decoy_sc.smi
+
+For each of these SMI files, in their respective directories, I want to write 2 files: a '.inp' file and a '.sh' file that is executable. 
+
+The .inp files has the following structure, 
+
+MAX_ATOMS   500
+FORCE_FIELD   16
+IONIZATION   0
+USE_DESALTER   no
+GENERATE_TAUTOMERS   no
+DETERMINE_CHIRALITIES   no
+IGNORE_CHIRALITIES   no
+NUM_STEREOISOMERS   1
+
+It does not change and thus can always be saved in the respective directory as 'ligprep_noepik.inp'. 
+
+We do need to write 2 '.sh' files. They should be titled as the original .smi file, but replacing '_sc.smi' with '_ligprep.sh'. Here is an example. 
+
+`SMO_chembl19_set_decoy_sc.smi` becomes `SMO_chembl19_set_decoy_ligprep.sh`
+and
+`SMO_chembl19_set_active_sc.smi` becomes `SMO_chembl19_set_active_ligprep.sh`
+
+And is saved in the SMO/stereochemistry directory. 
+
+In these sh files we write the following 
+
+
+ligprep -s 1 -i 2 -W i,-ph,7.0,-pht,0.0 -t 1 ‑imae input.mae -omae output.mae
+ligprep -inp ligprep.inp -ismi <input>.smi -omae <output>.maegz
+
+$SCHRODINGER/ligprep -inp ligprep_noepik.inp -NJOBS $NJOBS -JOBNAME $JOBNAME -HOST localhost:$NCPUS -ismi <the smi file we are writing for> -osd <the name of the sh file, but remove '.sh' for '.sdf'>
+
+If we are writing for the *active_sc.smi file, the variables should be: 
+
+$NJOBS = 1 
+$JOBNAME = the name of the sh script, without the '.sh' 
+$NCPUS = 1
+
+If we are writing for the *inactive_sc.sh file, the variables should be: 
+
+$NJOBS = 5
+$JOBNAME = the name of the sh script, without the '.sh' 
+$NCPUS = 5
+
+We need the script to run in a dry mode by default, where the intended files are printed to the terminal so I can inspect and debug, once I see it works, a -run argument can be supplied. The script should have documentation associated with a -h argument. 
+
+-------------------------------------------------
+
+seem to be running the ligprep just fine, now to think about docking. 
+
+it's a little tricky to think of how to best manage the directory structure?
+
+i think now we make a 'docking' folder in depth 1. there we will also write sh glide scripts for the same general system. 
+
+we'd have docking.in, like dd more or less, and then two submission scripts. 
+
+we would point to the abs path of the grid in the docking.in and the abs path of the sdf for the ligand. 
+
+actually that's not so bad 
+
+we find the relevant sdf in stereochemistry (2), for each of them we find the grid file above them them
+
+ls */*.zip 
+
+5HT1B/5HT1B.zip
+5HT2B/5HT2B.zip
+AA2AR/AA2AR.zip
+ACM2/ACM2.zip
+ACM3/ACM3.zip
+ADRB1/ADRB1.zip
+ADRB2/ADRB2.zip
+CCR5/CCR5.zip
+CRFR1/CRFR1.zip
+CXCR4/CXCR4.zip
+DRD3/DRD3.zip
+GPR40/GPR40.zip
+HRH1/HRH1.zip
+MGLUR1/MGLUR1.zip
+MGLUR5/MGLUR5.zip
+OPRD/OPRD.zip
+OPRK/OPRK.zip
+OPRM/OPRM.zip
+OPRX/OPRX.zip
+OX2R/OX2R.zip
+P2Y12/P2Y12.zip
+PAR1/PAR1.zip
+S1PR1/S1PR1.zip
+SMO/SMO.zip
+
+ls */stereochemistry/*.sdf 
+
+should work as well, the *.smi version works fine. 
+
+we can probably make a dummy directory of sorts to test the scripts by making the relevant sdf files in stereochemistry 
+
+let's do that 
+

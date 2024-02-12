@@ -1,0 +1,4 @@
+P2Y12.zip
+P2Y12_chembl19_set.smi
+P2Y12_chembl19_set_decoy.smi
+P2Y12_chembl19_set_active.smi

@@ -1,0 +1,4 @@
+GPR40.zip
+GPR40_chembl19_set_decoy.smi
+GPR40_chembl19_set_active.smi
+GPR40_chembl19_set.smi
