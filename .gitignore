@@ -1,6 +1,16 @@
 chembl_queries/
-GPCR-Bench-master/
 icm/
 litpcba/
 rip_grep_test/
 zip/
+# Ignore everything
+*
+
+# Whitelist specific file types across all directories
+!**/*.py
+!**/*.sh
+!**/*.md
+!**/*.ipynb
+!**/*.txt
+!**/*.in
+!**/*.smi
