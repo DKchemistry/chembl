@@ -1,0 +1,2 @@
+cgx: 2556, 7078
+smiconvert_in: 1
