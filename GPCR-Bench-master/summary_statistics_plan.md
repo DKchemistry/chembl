@@ -38,7 +38,11 @@ input -> merged/concat dataframe with activity labels -> baseline performance (e
 
 then those csvs can be combined, respectively, per protein. 3 csvs at the end (baseline, pareto, strain) (all proteins). those csvs can be processed all together for summary statistics
 
-we can use the current GPR40.ipynb and start to clean it up for this task. i can show our work to avoid bad time management. 
+we can use the current GPR40.ipynb and start to clean it up for this task. i can show our work to avoid bad time management. we do not need to worry about the graphs for now, we can rework those seperately, but it is nice to have them as a sanity check. however the specific formatting is not very important 
+
+okay i have the strain metrics for 1 protein, need baseline, and pareto.
+
+let's do baseline and then think about other stuff 
 
 
 
