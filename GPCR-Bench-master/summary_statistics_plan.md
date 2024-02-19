@@ -44,6 +44,26 @@ okay i have the strain metrics for 1 protein, need baseline, and pareto.
 
 let's do baseline and then think about other stuff 
 
+# papermill
 
+we need parameters for: 
+
+title suffix
+
+file processing (paths)
+
+inactives or decoy
+
+maybe style but not that important 
+
+we should be able to accomodate multiple datasets - like gpcr bench and lit pcba, so maybe a title prefix 
+
+maybe the pareto ranks themselves 
+
+ultimately in psuedo code we want: 
+
+make a notebook for every file proessing option as the name of title_prefix+title_suffix.ipynb 
+
+it would be good to make the lit pcba dataset organized like gpcr bench is, but it seems kinda tricky to do that as they are structured differently in terms of data, so i think it might be best to have that as a fully seperate pipeline.
 
 
