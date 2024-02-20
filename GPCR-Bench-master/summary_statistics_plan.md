@@ -67,3 +67,14 @@ make a notebook for every file proessing option as the name of title_prefix+titl
 it would be good to make the lit pcba dataset organized like gpcr bench is, but it seems kinda tricky to do that as they are structured differently in terms of data, so i think it might be best to have that as a fully seperate pipeline.
 
 
+# pareto 
+
+20 ranks is sufficient for francesco 
+
+we need to write metrics for 
+
+protein, Strain Energy Cutoff, EF1%, EF5%, ROC
+xxx, Pareto 20,
+
+Protein,Strain Energy Cutoff,EF1%,EF5%,deltaEF1%,deltaEF5%,Linear Log10 AUC (x10),Delta Linear Log10 AUC (x10),ROC_AUC,Actives,Total Count,deltaAUC
+
