@@ -2030,11 +2030,6 @@ plot_pareto_rank_roc(df_copy, ax=ax)
 plt.show()
 
 # %%
-combined_df = pd.read_csv("./papermill/combined_data.csv")
-combined_df.columns.to_list()
-# %%
-
-import pandas as pd
 
 def write_pareto_rank_metrics(df, a=1e-3, title_suffix=title_suffix):
     # initalize a dataframe to store pareto ranking metrics
@@ -2100,8 +2095,23 @@ def write_pareto_rank_metrics(df, a=1e-3, title_suffix=title_suffix):
 
     pareto_ranking_metrics = pd.concat([pareto_ranking_metrics, pd.DataFrame([new_row])], ignore_index=True)
 
-    display(pareto_ranking_metrics)
+    pareto_ranking_metrics.to_csv(
+        f"./papermill/ParetoRankCSV/ParetoRanking_metrics_{title_suffix}.csv", index=False
+    )
+
+
+    return pareto_ranking_metrics
 
 write_pareto_rank_metrics(df_copy)
 
+# %%
+pareto_ranking_metrics = write_pareto_rank_metrics(df_copy)
+display(pareto_ranking_metrics)
+# %%
+combined_data = pd.read_csv("./papermill/combined_data.csv")
+display(combined_data)
+# %%
+test_concat = pd.concat([combined_data, pareto_ranking_metrics], ignore_index=True)
+test_concat
+# we don't really need Actives or Total_Count since we do not filter the data.
 # %%
