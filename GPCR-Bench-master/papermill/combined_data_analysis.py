@@ -9,9 +9,10 @@ sns.set_style("darkgrid")
 # plt.style.context(matplotx.styles.duftify(matplotx.styles.dracula))
 
 # %%
-data = pd.read_csv("combined_data.csv")
-data.head()
-
+data = pd.read_csv("./ParetoRankCSV/combined_data_pareto.csv")
+data
+# data = pd.read_csv("combined_data.csv")
+# data.head()
 # %%
 # Grouping the data by 'Strain Energy Cutoff' and calculating the mean of the delta values
 grouped_data = (
@@ -24,6 +25,8 @@ grouped_data = (
 
 # Display the grouped data
 grouped_data
+
+# %%
 
 # %%
 # for index, item_indexed in enumerate tracks the index and the item at that index
@@ -44,6 +47,14 @@ for i, column in enumerate(
     plt.title(f"Mean {column} vs Strain Energy Cutoff")
 
 plt.tight_layout()
+plt.show()
+
+# %%
+sns.barplot(x='Strain Energy Cutoff', y='Delta Linear Log10 AUC (x10)', data=grouped_data)
+plt.title('Mean Delta Linear Log10 AUC (x10) vs Strain Energy Cutoff')
+plt.xlabel('Strain Energy Cutoff')
+plt.ylabel('Delta Linear Log10 AUC (x10)')
+plt.xticks(rotation=45)
 plt.show()
 
 # %%
@@ -150,4 +161,3 @@ plt.ylabel("Protein")
 plt.show()
 
 # %%
-
