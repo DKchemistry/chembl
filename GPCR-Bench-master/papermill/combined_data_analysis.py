@@ -50,10 +50,12 @@ plt.tight_layout()
 plt.show()
 
 # %%
-sns.barplot(x='Strain Energy Cutoff', y='Delta Linear Log10 AUC (x10)', data=grouped_data)
-plt.title('Mean Delta Linear Log10 AUC (x10) vs Strain Energy Cutoff')
-plt.xlabel('Strain Energy Cutoff')
-plt.ylabel('Delta Linear Log10 AUC (x10)')
+sns.barplot(
+    x="Strain Energy Cutoff", y="Delta Linear Log10 AUC (x10)", data=grouped_data
+)
+plt.title("Mean Delta Linear Log10 AUC (x10) vs Strain Energy Cutoff")
+plt.xlabel("Strain Energy Cutoff")
+plt.ylabel("Delta Linear Log10 AUC (x10)")
 plt.xticks(rotation=45)
 plt.show()
 
