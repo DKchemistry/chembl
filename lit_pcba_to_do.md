@@ -168,7 +168,9 @@ Do I have an example with an sdfgz? No, not locally. The `glide_sort` utility me
 
 Let's test: 
 
+```sh
 glide_sort -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf" -use_dscore -best_by_title "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_glide_lib.sdfgz"
+```
 
 Output: 
 
@@ -228,3 +230,90 @@ We should check for duplicates now, prior to the strain calculation. We will nee
 Created `adrb2_duplicate_check.py` (interactive python style, psuedo-ipynb), it does appear to be to not have any duplicates. Odd, but possible. 
 
 So both the conversion and deduplication seems to be fine here. We should commit here to update our progress and return to to strain. 
+
+Commit has been added. Rsync is still in progress (quite slow right now). 
+
+When running strain on Tobias, I had to do some form of refactoring in order to successfully import the XML library, I do not believe that function is local to this mac. Let's go look on tobias for what I did. 
+
+So, the change seems work like so: 
+
+In `refactor_TL_Functions.py`
+
+```py 
+
+import xml.etree.ElementTree as ET
+from rdkit import Chem
+import os
+import numpy as np
+from math import sqrt, atan2, pi
+from math import ceil
+
+#tree = ET.parse("TL_2.1_VERSION_6.xml")
+#root = tree.getroot()
+# Determine the directory of the current script
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Construct the absolute path to the XML file
+xml_file_path = os.path.join(script_dir, "TL_2.1_VERSION_6.xml")
+
+# Use the absolute path to parse the XML file
+tree = ET.parse(xml_file_path)
+root = tree.getroot()
+
+```
+This is contained in a directory in `/mnt/data/dk/scripts/strain` as such: 
+
+```sh 
+TL_2.1_VERSION_6.xml
+__pycache__
+refactor_TL_Functions.py
+refactor_Torsion_Strain.py
+```
+
+I should rsync to a local strain calculation. I should also check my history of how this command was run and where it is on my path on tobias. 
+
+The path (tobias) seems to be as expected: 
+
+`export PATH=/mnt/data/dk/scripts:$PATH`
+
+The command was run via a `strain_runner.sh` script that required some args and did a dry run prior to execution. 
+
+```sh 
+./strain_runner.sh -b . -s /mnt/data/dk/scripts/strain/refactor_Torsion_Strain.py -e rdkit_en
+```
+-b is for the directory containing the subdirectories, -s is the path to the strain (as we can see), and -e was the conda environment. It does a confirmation step so we can see what the commands would be prior to execution (I used parallel here). 
+
+```sh
+python /mnt/data/dk/scripts/strain/refactor_Torsion_Strain.py -i "/mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/SMO/docking/SMO_decoy_docking_lib.sdf" -o "/mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/SMO/strain/SMO_decoy_docking_lib.csv"
+```
+
+The strain runner (and the sort runner), will probably need to be refactored to handle the new directory structure. 
+
+First, let's get the local version of our script running because the latency to tobias is pretty rough. It appears I already have it. So we can start testing the strain. 
+
+# Strain Calculation 
+
+One caveat with our python strain script is that despite exporting it to path, it can not be easily called from the command line as we need to pass 'python' prior. A shebang can be added to the top of the script to make it executable, but I am not sure if that is the best approach as we would need the conda environment with rdkit - reducing portability of the script and adding later confusion. It is best to call the full path of the script for now. 
+
+```sh
+python ~/scripts/strain/refactor_Torsion_Strain.py -i "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf" -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
+```
+
+Unfortunately, the script can not natively force the creation of the strain directory I specified in the output. 
+
+I refactored and committed the refactor to allow for creating the dir. 
+
+Output: 
+
+```
+33 molecules finished reading. Calculating strain energy...
+33 successful / 0 NA. Please check: /Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv
+
+```
+Now let's run the inactive if it computes and continue testing the duplicates. 
+
+```sh
+python ~/scripts/strain/refactor_Torsion_Strain.py -i "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_inactive_docking_lib_sorted.sdf" -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
+```
+
+Seems to be running fine, it's just gonna take awhile. Once we have tested it for duplicates, we can automate it and run the rest of the targets, local will be fine. 
