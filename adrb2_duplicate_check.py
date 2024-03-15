@@ -102,3 +102,93 @@ duplicates_decoys = decoy_sdf["Molecule_Name"].duplicated()
 print(any(duplicates_decoys))
 
 # %%
+
+file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
+file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
+
+# %%
+
+# from old code, probably fine but not optimal
+def concatenate_csv_files(file_list):
+    """
+    Concatenates multiple strain CSV files into a single dataframe.
+    Only the first five columns are kept for now.
+
+    Args:
+        file_list (list): A list of file paths to the CSV files.
+
+    Returns:
+        pandas.DataFrame: The concatenated dataframe.
+
+    """
+    # Specify the column names
+    column_names = [
+        "Molecule_Name",
+        "Total_E",
+        "Lower_Bound",
+        "Upper_Bound",
+        "Num_Torsion_Patterns",
+    ]
+
+    # List to hold dataframes
+    df_list = []
+
+    # Loop over each file in the list
+    for file in file_list:
+        # Import the CSV file as a df, using only the first five columns of the CSV file
+        df = pd.read_csv(file, usecols=range(5), names=column_names, header=0)
+        df_list.append(df)
+
+    # Concatenate all dataframes in the list
+    final_df = pd.concat(df_list, ignore_index=True)
+
+    return final_df
+# %%
+active_strain = concatenate_csv_files([file_path_strain_active])
+decoy_strain = concatenate_csv_files([file_path_strain_decoy])
+# %%
+duplicates_actives = active_strain["Molecule_Name"].duplicated()
+print(any(duplicates_actives))
+duplicates_decoys = decoy_strain["Molecule_Name"].duplicated()
+print(any(duplicates_decoys))
+# %%
+active_data=pd.merge(active_sdf, active_strain, on='Molecule_Name')
+decoy_data=pd.merge(decoy_sdf, decoy_strain, on='Molecule_Name')
+# %%
+# only keep as commented for debug
+pre_merge = [active_sdf, decoy_sdf, active_strain, decoy_strain]
+
+for df in pre_merge:
+    print(df.shape)
+# %%
+# #only keep as commented for debug
+post_merge = [active_data, decoy_data]
+
+for df in post_merge:
+    print(df.shape)
+
+# %%
+all_data = pd.concat([active_data, decoy_data])
+
+print(all_data.shape)
+# %%
+def plot_density(df, title_suffix):
+  # Hardcoded column names
+  activity_col = 'Activity'
+  score_col = 'r_i_docking_score'
+
+  # Create a density plot for the score of active and inactive molecules
+  sns.kdeplot(df.loc[df[activity_col] == 0, score_col], label='Inactive', fill=True)
+  sns.kdeplot(df.loc[df[activity_col] == 1, score_col], label='Active', fill=True)
+
+  # Add title and labels
+  plt.title(f'Density Plot of Docking Score for Active and Decoy Molecules ({title_suffix})')
+  plt.xlabel('Docking Score')
+  plt.ylabel('Density')
+  plt.legend(loc='best')
+
+  # Show the plot
+  plt.show()
+# %%
+plot_density(all_data, title_suffix)
+# %%
