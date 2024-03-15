@@ -317,3 +317,25 @@ python ~/scripts/strain/refactor_Torsion_Strain.py -i "/Users/lkv206/work/to_do_
 ```
 
 Seems to be running fine, it's just gonna take awhile. Once we have tested it for duplicates, we can automate it and run the rest of the targets, local will be fine. 
+
+Output: 
+
+```
+103591 molecules finished reading. Calculating strain energy...
+102674 successful / 917 NA. Please check: /Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted_strain.csv
+
+```
+
+NOTE: Mistake in output file path, saved it as "active" and did not save it to strain. Manually `mv` to fix it since no overwrite occured. 
+
+# Strain Metrics 
+
+Initial tests using the adrb2 system look okay, but some things should be fixed and potentially retrospectively fixed for the GPCR-bench dataset. 
+
+1. Even though we should only have `102674 successful / 917 NA.` molecules in the inactives, it appears as though we have 103K. This needs to be explored by examining the difference (if any) between the input csv of strain energy, and what the dataframe actually looks like. 
+
+2. Some strain values are flagged (negative energies) and should be removed. 
+
+3. The duplication part seems fine however, the checks seem to pass and there is no dramatic change in the amount of rows based on merge (none at all, based on my memory). I'd want to check this again, as my old checks may have variable name issues I didn't expect. 
+
+4. Need to be careful with how the files themselves are being saved, so I did not run any "write_metrics" related functions. This also should be pretty carefull assessed because we will need to compile them for output statistics. 
