@@ -1,0 +1,8 @@
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/ADRB2/ADRB2_3sn6_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/ADRB2/actives_rdkit_ligprep.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
