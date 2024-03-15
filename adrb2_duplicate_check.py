@@ -192,3 +192,136 @@ def plot_density(df, title_suffix):
 # %%
 plot_density(all_data, title_suffix)
 # %%
+
+# %%
+def plot_density_strain(df, title_suffix):
+    # Hardcoded column names
+    activity_col = "Activity"
+    score_col = "Total_E"
+
+    # Create a density plot for the score of active and inactive molecules
+    sns.kdeplot(df.loc[df[activity_col] == 0, score_col], label="Inactive", fill=True)
+    sns.kdeplot(df.loc[df[activity_col] == 1, score_col], label="Active", fill=True)
+
+    # Add title and labels
+    plt.title(
+        f"Density Plot of Strain Energy for Active and Decoy Molecules ({title_suffix})"
+    )
+    plt.xlabel("Total Strain Energy")
+    plt.ylabel("Density")
+    plt.legend(loc="best")
+
+    # Show the plot
+    plt.show()
+
+plot_density_strain(all_data, title_suffix)
+
+# %%
+def calculate_enrichment_parameters(df):
+    """
+    Calculates parameters we will need for Enrichment Plots
+
+    Parameters:
+    df (pandas.DataFrame): The dataframe to calculate the logAUC for.
+
+    Returns:
+    pandas.DataFrame: The dataframe with the logAUC calculated.
+    """
+    # Sort the subset by 'r_i_docking_score' in ascending order
+
+    df = df.copy()
+
+    df.sort_values(by="r_i_docking_score", inplace=True)
+
+    # Reset the index so that we are ranking by the docking score
+    df.reset_index(drop=True, inplace=True)
+
+    # Adjusting the index to start from 1
+    df.index += 1
+
+    # Calculate the cumulative sum of active compounds
+    df["Cumulative_Actives"] = df["Activity"].cumsum()
+
+    # Calculate the Total Actives
+    df["Total_Actives"] = df["Activity"].sum()
+
+    # Calculate the fraction of identified actives at each row
+    df["Fraction_Actives"] = df["Cumulative_Actives"] / df["Total_Actives"]
+
+    # Calculate the percentage of compounds screened at each row
+    df["Percentage_Screened"] = df.index / len(df)
+
+    return df
+
+# %%
+all_data = calculate_enrichment_parameters(all_data)
+all_data
+
+# %%
+total_e_thresholds = [None, 4, 4.5, 5.0, 5.5, 6.0, 7.0, 7.5, 8.0]
+
+# %%
+def logauc_by_strain(df, a=1e-3, total_e_threshold=None):
+    # Filter dataframe based on 'Total_E' threshold if provided
+    if total_e_threshold is not None:
+        df = df[df["Total_E"] <= total_e_threshold]
+
+    # Invert scores since lower scores indicate positive class
+    y_scores_inverted = -df["r_i_docking_score"]
+
+    # Calculate FPR, TPR, and thresholds using sklearn
+    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+
+    # Select the thresholds that result in FPR >= a for log scale plotting
+    valid_indices = np.where(fpr >= a)
+    fpr_valid = fpr[valid_indices]
+    tpr_valid = tpr[valid_indices]
+
+    # Calculate log of FPR for valid indices
+    log_fpr_valid = np.log10(fpr_valid)
+
+    # Calculate the AUC for the valid range
+    linlog_auc = auc(log_fpr_valid, tpr_valid)
+
+    ### NOTE TIMES 10 NOTE ###
+    log_auc = (linlog_auc / -np.log10(a)) * 10
+
+    return log_auc
+
+# %%
+def plot_log_aucs(data, thresholds, title_suffix):
+    # Calculate log_auc for each threshold and plot
+    log_aucs = [logauc_by_strain(data, total_e_threshold=t) for t in thresholds]
+    
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else 'No Cutoff' for t in thresholds]
+    
+    plt.bar(range(len(thresholds)), log_aucs, tick_label=x_labels)
+    plt.title(f"Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
+    plt.xlabel("Strain Energy Cutoff")
+    plt.ylabel("Linear Log10 AUC (x10)")
+    plt.show()
+
+# %%
+plot_log_aucs(all_data, total_e_thresholds, title_suffix)
+
+# %%
+def plot_delta_log_aucs(data, thresholds, title_suffix):
+  # Calculate log_auc for 'None' threshold
+  none_log_auc = logauc_by_strain(data, total_e_threshold=None)
+  
+  # Calculate delta log_auc for each threshold and plot
+  delta_log_aucs = [logauc_by_strain(data, total_e_threshold=t) - none_log_auc for t in thresholds]
+  
+  # Create labels for the x-axis
+  x_labels = [str(t) if t is not None else 'No Cutoff' for t in thresholds]
+  
+  plt.bar(range(len(thresholds)), delta_log_aucs, tick_label=x_labels)
+  plt.title(f"Delta Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
+  plt.xlabel("Strain Energy Cutoff")
+  plt.ylabel("Delta Linear Log10 AUC (x10)")
+  plt.show()
+
+plot_delta_log_aucs(all_data, total_e_thresholds, title_suffix)
+
+# %%
