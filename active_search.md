@@ -369,3 +369,7 @@ We can find inactives by doing the opposite property search, greater than the ac
 A very annoying thing about ChEMBL is that once you set some filters in their GUI, it locks you from adding new types of filters. So you have to literally clear all your filters and start over. I don't know how we would filter the inactives anyway. Now we can get this into ICM and filter it.
 
 Filtering in ChEMBL directly is infuriating, I downloaded all the data for OPRK, I am just gonna do the whole thing in ICM. This interface is awful. 
+
+
+test
+
