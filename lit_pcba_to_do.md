@@ -334,7 +334,90 @@ Initial tests using the adrb2 system look okay, but some things should be fixed 
 
 1. Even though we should only have `102674 successful / 917 NA.` molecules in the inactives, it appears as though we have 103K. This needs to be explored by examining the difference (if any) between the input csv of strain energy, and what the dataframe actually looks like. 
 
+* Follow Up: 
+
+```py
+decoy_strain['Total_E'].isna().sum()
+``` 
+Returns 917. These are NaN values. This makes sense, however they will need to be dropped.
+
+We can check the actives as well: 
+
+```py
+active_strain['Total_E'].isna().sum()
+```
+Returns 0. We should still drop these in case other active strain files have NaN values. 
+
 2. Some strain values are flagged (negative energies) and should be removed. 
+
+* Follow Up: 
+
+```py
+(decoy_strain['Total_E'] < 0).sum()
+```
+Returns 146. These are negative values. They will need to be dropped. 
+
+We can check the actives as well: 
+
+```py
+(active_strain['Total_E'] < 0).sum()
+```
+Returns 0. We should still drop these in case other active strain files have negative values. 
+
+Still, this doesn't make sense. I can see from `plot_density_strain` that there are negative values. Something is wrong. Is this a consequence of the density plot? It appears to be so. 
+
+See here, if we run: 
+
+```py 
+plot_densities_strain(all_data, title_suffix)
+```
+We get a density plot with negative values for the actives: 
+
+![alt text](image-1.png)
+
+Yet, if we run: 
+
+```py
+all_data[(all_data['Total_E']>0) & (all_data['Activity']==1)]['Total_E'].hist()
+```
+
+We get a histogram with no negative values: 
+
+![alt text](image-2.png)
+
+By changing the function to make histograms instead (but normalized to an area of 1) with bins=50, like so below, we can see more clearly what is going on. The inactives do have some negative values, but the actives do not. 
+
+```py
+def plot_histogram_strain(df, title_suffix):
+    # Hardcoded column names
+    activity_col = "Activity"
+    score_col = "Total_E"
+    
+    plt.hist(df.loc[df[activity_col] == 0, score_col], bins=50, label="Inactive", alpha=0.5, density=True)
+    plt.hist(df.loc[df[activity_col] == 1, score_col], bins=50, label="Active", alpha=0.5, density=True)
+
+    
+    # Add title and labels
+    plt.title(f"Histogram of Strain Energy for Active and Decoy Molecules ({title_suffix})")
+    plt.xlabel("Total Strain Energy")
+    plt.ylabel("Density")
+    plt.legend(loc="best")
+    
+    # Show the plot
+    plt.show()
+```
+```py
+plot_histogram_strain(all_data, title_suffix)
+```
+
+![alt text](image-3.png)
+
+This was perhaps a long detour to better understand how KDE plots can work and occasionally be deceptive compared to histograms. 
+
+In conclusion, we still should still drop the NaN and negative values from the decoy data prior to the merging or concat steps.
+
+We will need to integrate these changes into GPCR-bench analysis workflow as well and update the metrics. 
+
 
 3. The duplication part seems fine however, the checks seem to pass and there is no dramatic change in the amount of rows based on merge (none at all, based on my memory). I'd want to check this again, as my old checks may have variable name issues I didn't expect. 
 
