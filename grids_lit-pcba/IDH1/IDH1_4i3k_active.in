@@ -1,0 +1,8 @@
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/IDH1/IDH1_4i3k_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/IDH1/actives_rdkit_ligprep.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
