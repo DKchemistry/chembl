@@ -136,7 +136,7 @@ def concatenate_csv_files(file_list):
     # Loop over each file in the list
     for file in file_list:
         # Import the CSV file as a df, using only the first five columns of the CSV file
-        df = pd.read_csv(file, usecols=range(5), names=column_names, header=0)
+        df = pd.read_csv(file, usecols=range(5), names=column_names, header=None)
         df_list.append(df)
 
     # Concatenate all dataframes in the list
@@ -146,6 +146,30 @@ def concatenate_csv_files(file_list):
 # %%
 active_strain = concatenate_csv_files([file_path_strain_active])
 decoy_strain = concatenate_csv_files([file_path_strain_decoy])
+
+# %%
+
+def clean_dataframe(df, column_name='Total_E'):
+    initial_count = len(df)
+    nan_count = df[column_name].isna().sum()
+    df = df.dropna(subset=[column_name])
+    negative_count = (df[column_name] < 0).sum()
+    df = df[df[column_name] >= 0]
+    print(f"Dropped {nan_count} rows due to NaN values.")
+    print(f"Dropped {negative_count} rows due to negative values in '{column_name}'.")
+    final_count = len(df)
+    print(f"Initially {initial_count} rows, now {final_count} rows.")
+    return df
+
+# Example usage: 
+# active_strain = clean_dataframe(active_strain, 'Total_E')
+# decoy_strain = clean_dataframe(decoy_strain, 'Total_E')
+
+# %%
+active_strain = clean_dataframe(active_strain, 'Total_E')
+# %%
+decoy_strain = clean_dataframe(decoy_strain, 'Total_E')
+
 # %%
 duplicates_actives = active_strain["Molecule_Name"].duplicated()
 print(any(duplicates_actives))
@@ -155,17 +179,19 @@ print(any(duplicates_decoys))
 active_data=pd.merge(active_sdf, active_strain, on='Molecule_Name')
 decoy_data=pd.merge(decoy_sdf, decoy_strain, on='Molecule_Name')
 # %%
-# only keep as commented for debug
-pre_merge = [active_sdf, decoy_sdf, active_strain, decoy_strain]
+pre_merge = {'active_sdf': active_sdf, 'decoy_sdf': decoy_sdf, 'active_strain': active_strain, 'decoy_strain': decoy_strain}
 
-for df in pre_merge:
-    print(df.shape)
+print("Before merge of active_sdf, decoy_sdf, active_strain, decoy_strain:")
+for name, df in pre_merge.items():
+    print(f"{name}: {df.shape}")
+
 # %%
-# #only keep as commented for debug
-post_merge = [active_data, decoy_data]
+post_merge = {'active_data': active_data, 'decoy_data': decoy_data}
 
-for df in post_merge:
-    print(df.shape)
+print("After merge of active_data and decoy_data:")
+for name, df in post_merge.items():
+    print(f"{name}: {df.shape}")
+
 
 # %%
 all_data = pd.concat([active_data, decoy_data])
