@@ -418,7 +418,25 @@ In conclusion, we still should still drop the NaN and negative values from the d
 
 We will need to integrate these changes into GPCR-bench analysis workflow as well and update the metrics. 
 
+3. There appears to be some sort of issue in reading in the csv file containing the strain energies. For the ADRB2 system, I am seeing 33/33 successful strain calculations yet `active_strain` has 32 rows. 
 
-3. The duplication part seems fine however, the checks seem to pass and there is no dramatic change in the amount of rows based on merge (none at all, based on my memory). I'd want to check this again, as my old checks may have variable name issues I didn't expect. 
+* Follow Up: 
 
-4. Need to be careful with how the files themselves are being saved, so I did not run any "write_metrics" related functions. This also should be pretty carefull assessed because we will need to compile them for output statistics. 
+(brief note, remember our `cmc` function, cmc <some command> will copy the command and output)
+
+```sh
+$ wc -l ADRB2_4lde_active_docking_lib_sorted_strain.csv
+      33 ADRB2_4lde_active_docking_lib_sorted_strain.csv
+```
+So the CSV really does have 33 entries. Why is the first one being lost?
+
+The issue was with this function: 
+
+```py
+concatenate_csv_files(file_list)
+```
+I used header=0, where I should have used header=None. I believe header=0 specified that the first row was the headers, even though the function does rename them with the `column_names` variable. This will also need to be updated in the GPCR-bench workflow. 
+
+4. The duplication part seems fine however, the checks seem to pass and there is no dramatic change in the amount of rows based on merge (none at all, based on my memory). I'd want to check this again, as my old checks may have variable name issues I didn't expect. 
+
+5. Need to be careful with how the files themselves are being saved, so I did not run any "write_metrics" related functions. This also should be pretty carefull assessed because we will need to compile them for output statistics. 
