@@ -1,0 +1,8 @@
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/PPARG/PPARG_1zgy_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/PPARG/inactives_rdkit.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True

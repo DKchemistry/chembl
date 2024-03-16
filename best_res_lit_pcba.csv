@@ -1,16 +1,3 @@
-Protein,PDB_ID,Resolution,Method,Description,Date
-ADRB2,4lde,2.79,X-ray diffraction,Structure of beta2 adrenoceptor bound to BI167107 and an engineered nanobody,20130925
-ALDH1,5l2m,1.7,X-ray diffraction,Structure of ALDH1A1 in complex with BUC11,20170308
-ESR1ago,2qzo,1.72,X-ray diffraction,Crystal Structure of the Estrogen Receptor Alpha Ligand Binding Domain Complexed with WAY-169916,20080826
-ESR1ant,2iog,1.6,X-ray diffraction,Human estrogen receptor alpha ligand-binding domain in complex with compound 11F,20071009
-FEN1,5fv7,2.84,X-ray diffraction,Human Fen1 in complex with an N-hydroxyurea compound,20160817
-GBA,2v3d,1.96,X-ray diffraction,acid-beta-glucosidase with N-butyl-deoxynojirimycin,20070814
-IDH1,4umx,1.88,X-ray diffraction,IDH1 R132H in complex with cpd 1,20141119
-KAT2A,5mlj,1.8,X-ray diffraction,"Bromodomain of Human GCN5 with 4-bromo-2-methyl-5-(((3R,5R)-1-methyl-5-phenylpiperidin-3-yl)amino)pyridazin-3(2H)-one",20171220
-MAPK1,4zzn,1.33,X-ray diffraction,Human ERK2 in complex with an inhibitor,20150527
-MTORC1,4dri,1.45,X-ray diffraction,"Co-crystal structure of the PPIase domain of FKBP51, Rapamycin and the FRB fragment of mTOR",20130206
-OPRK1,6b73,3.1,X-ray diffraction,Crystal Structure of a nanobody-stabilized active state of the kappa-opioid receptor,20180117
-PKM2,3gr4,1.6,X-ray diffraction,Activator-Bound Structure of Human Pyruvate Kinase M2,20090407
-PPARG,3b1m,1.6,X-ray diffraction,Crystal structure of the PPARgamma-LBD complexed with a cercosporamide derivative modulator Cerco-A,20110824
-TP53,3zme,1.35,X-ray diffraction,Structure of the p53 core domain mutant Y220C bound to the small molecule PhiKan7242,20130508
-VDR,3a2j,2.7,X-ray diffraction,Crystal structure of the human vitamin D receptor (H305F/H397F) ligand binding domain complexed with TEI-9647,20100526
+version https://git-lfs.github.com/spec/v1
+oid sha256:21bcb0be35ea119a130358c3a7412f4491b654c9625b1122ec16d4f72fc3068d
+size 1809
