@@ -24,6 +24,8 @@ title_suffix = "ADRB2_4lde"
 file_path_sdf_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf"
 file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_inactive_docking_lib_sorted.sdf"
 
+file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
+file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
 
 # %%
 def sdf_to_df(args):
@@ -136,7 +138,9 @@ def concatenate_csv_files(file_list):
     # Loop over each file in the list
     for file in file_list:
         # Import the CSV file as a df, using only the first five columns of the CSV file
-        df = pd.read_csv(file, usecols=range(5), names=column_names, header=None)
+        df = pd.read_csv(file, usecols=range(5), names=column_names, 
+                         header=None
+                         )
         df_list.append(df)
 
     # Concatenate all dataframes in the list
