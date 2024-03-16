@@ -422,7 +422,7 @@ We will need to integrate these changes into GPCR-bench analysis workflow as wel
 
 * Follow Up: 
 
-(brief note, remember our `cmc` function, cmc <some command> will copy the command and output)
+(brief note, remember our `cmc` function, `cmc <some command>` will copy the command and output)
 
 ```sh
 $ wc -l ADRB2_4lde_active_docking_lib_sorted_strain.csv
@@ -437,6 +437,15 @@ concatenate_csv_files(file_list)
 ```
 I used header=0, where I should have used header=None. I believe header=0 specified that the first row was the headers, even though the function does rename them with the `column_names` variable. This will also need to be updated in the GPCR-bench workflow. 
 
+I have added the commits to the repo for this file and `adrb2_duplicate_check.py`. 
+
 4. The duplication part seems fine however, the checks seem to pass and there is no dramatic change in the amount of rows based on merge (none at all, based on my memory). I'd want to check this again, as my old checks may have variable name issues I didn't expect. 
 
 5. Need to be careful with how the files themselves are being saved, so I did not run any "write_metrics" related functions. This also should be pretty carefull assessed because we will need to compile them for output statistics. 
+
+This is also an issue as the actual papermill GPCR bench notebook will need to be updated to account for: 
+
+- Dropping negative and NaN values
+- Fixing the CSV reading functions. 
+
+In the future, I should consider some sort of 'don't save' parameter for the metrics reporting. For now, we probably want to just run this in some sort of seperate backup directory and not git add/commit it. Currently, I think it would be best to commit the current state considering how I changed gitignore. 
