@@ -1,8 +1,0 @@
-GRIDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/SMO/SMO.zip
-LIGANDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/SMO/stereochemistry/SMO_chembl19_set_active.sdf
-POSE_OUTTYPE ligandlib_sd
-DOCKING_METHOD confgen
-PRECISION SP
-AMIDE_MODE penal
-SAMPLE_RINGS True
-EPIK_PENALTIES True
