@@ -97,20 +97,17 @@ active_sdf = sdf_to_df((file_path_sdf_active, "active"))
 decoy_sdf = sdf_to_df((file_path_sdf_decoy, "inactive"))
 
 # %%
-# TODO replace with a check for duplicates and sys exit with message
 duplicates_actives = active_sdf["Molecule_Name"].duplicated()
-print(any(duplicates_actives))
-duplicates_decoys = decoy_sdf["Molecule_Name"].duplicated()
-print(any(duplicates_decoys))
+print("Duplicates in active_sdf:", any(duplicates_actives))
 
+duplicates_decoys = decoy_sdf["Molecule_Name"].duplicated()
+print("Duplicates in decoy_sdf:", any(duplicates_decoys))
 # %%
 
 file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
 
 # %%
-
-# from old code, probably fine but not optimal
 def concatenate_csv_files(file_list):
     """
     Concatenates multiple strain CSV files into a single dataframe.
@@ -138,9 +135,7 @@ def concatenate_csv_files(file_list):
     # Loop over each file in the list
     for file in file_list:
         # Import the CSV file as a df, using only the first five columns of the CSV file
-        df = pd.read_csv(file, usecols=range(5), names=column_names, 
-                         header=None
-                         )
+        df = pd.read_csv(file, usecols=range(5), names=column_names, header=None)
         df_list.append(df)
 
     # Concatenate all dataframes in the list
@@ -152,7 +147,6 @@ active_strain = concatenate_csv_files([file_path_strain_active])
 decoy_strain = concatenate_csv_files([file_path_strain_decoy])
 
 # %%
-
 def clean_dataframe(df, column_name='Total_E'):
     initial_count = len(df)
     nan_count = df[column_name].isna().sum()
@@ -176,23 +170,24 @@ decoy_strain = clean_dataframe(decoy_strain, 'Total_E')
 
 # %%
 duplicates_actives = active_strain["Molecule_Name"].duplicated()
-print(any(duplicates_actives))
+print("Duplicates in active_strain:", any(duplicates_actives))
+
 duplicates_decoys = decoy_strain["Molecule_Name"].duplicated()
-print(any(duplicates_decoys))
+print("Duplicates in decoy_strain:", any(duplicates_decoys))
 # %%
 active_data=pd.merge(active_sdf, active_strain, on='Molecule_Name')
 decoy_data=pd.merge(decoy_sdf, decoy_strain, on='Molecule_Name')
 # %%
-pre_merge = {'active_sdf': active_sdf, 'decoy_sdf': decoy_sdf, 'active_strain': active_strain, 'decoy_strain': decoy_strain}
+pre_merge = {'active_sdf': active_sdf, 'active_strain': active_strain, 'decoy_sdf': decoy_sdf, 'decoy_strain': decoy_strain}
 
-print("Before merge of active_sdf, decoy_sdf, active_strain, decoy_strain:")
+print("Dataframe shapes before the merge of [active_sdf + active_strain] to [active_data] and [decoy_sdf + decoy_strain] to [decoy_data]:\n")
 for name, df in pre_merge.items():
     print(f"{name}: {df.shape}")
 
 # %%
 post_merge = {'active_data': active_data, 'decoy_data': decoy_data}
 
-print("After merge of active_data and decoy_data:")
+print("Dataframe shapes after merge to active_data and decoy_data:")
 for name, df in post_merge.items():
     print(f"{name}: {df.shape}")
 
@@ -200,7 +195,9 @@ for name, df in post_merge.items():
 # %%
 all_data = pd.concat([active_data, decoy_data])
 
-print(all_data.shape)
+print("Dataframe shape after concat of active_data and decoy_data to all_data\n", all_data.shape, "\n")
+
+print("all_data should be addition of the inputs")
 # %%
 def plot_density(df, title_suffix):
   # Hardcoded column names
