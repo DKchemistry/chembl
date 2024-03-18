@@ -1,3 +1,6 @@
+# %% [markdown]
+#  # Imports
+
 # %%
 import pandas as pd
 import seaborn as sns
@@ -10,11 +13,20 @@ from rdkit import Chem
 from matplotlib.cm import viridis
 from matplotlib.colors import Normalize
 
+# %% [markdown]
+#  # Graphing Settings
+
+# %%
+
+
 matplotlib.rcdefaults()
 sns.set_style("darkgrid")
 plt.rcParams["figure.dpi"] = 100
 
 pd.set_option("display.max_columns", None)
+
+# %% [markdown]
+#  # Papermill Parameters
 
 # %%
 # title suffix
@@ -26,6 +38,15 @@ file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_li
 
 file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
+
+# %% [markdown]
+# # Directory Creation/Saving
+# %%
+
+
+# %% [markdown]
+#  # Data Processing
+
 
 # %%
 def sdf_to_df(args):
@@ -107,6 +128,7 @@ print("Duplicates in decoy_sdf:", any(duplicates_decoys))
 file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
 
+
 # %%
 def concatenate_csv_files(file_list):
     """
@@ -142,12 +164,15 @@ def concatenate_csv_files(file_list):
     final_df = pd.concat(df_list, ignore_index=True)
 
     return final_df
+
+
 # %%
 active_strain = concatenate_csv_files([file_path_strain_active])
 decoy_strain = concatenate_csv_files([file_path_strain_decoy])
 
+
 # %%
-def clean_dataframe(df, column_name='Total_E'):
+def clean_dataframe(df, column_name="Total_E"):
     initial_count = len(df)
     nan_count = df[column_name].isna().sum()
     df = df.dropna(subset=[column_name])
@@ -159,14 +184,15 @@ def clean_dataframe(df, column_name='Total_E'):
     print(f"Initially {initial_count} rows, now {final_count} rows.")
     return df
 
-# Example usage: 
+
+# Example usage:
 # active_strain = clean_dataframe(active_strain, 'Total_E')
 # decoy_strain = clean_dataframe(decoy_strain, 'Total_E')
 
 # %%
-active_strain = clean_dataframe(active_strain, 'Total_E')
+active_strain = clean_dataframe(active_strain, "Total_E")
 # %%
-decoy_strain = clean_dataframe(decoy_strain, 'Total_E')
+decoy_strain = clean_dataframe(decoy_strain, "Total_E")
 
 # %%
 duplicates_actives = active_strain["Molecule_Name"].duplicated()
@@ -175,17 +201,24 @@ print("Duplicates in active_strain:", any(duplicates_actives))
 duplicates_decoys = decoy_strain["Molecule_Name"].duplicated()
 print("Duplicates in decoy_strain:", any(duplicates_decoys))
 # %%
-active_data=pd.merge(active_sdf, active_strain, on='Molecule_Name')
-decoy_data=pd.merge(decoy_sdf, decoy_strain, on='Molecule_Name')
+active_data = pd.merge(active_sdf, active_strain, on="Molecule_Name")
+decoy_data = pd.merge(decoy_sdf, decoy_strain, on="Molecule_Name")
 # %%
-pre_merge = {'active_sdf': active_sdf, 'active_strain': active_strain, 'decoy_sdf': decoy_sdf, 'decoy_strain': decoy_strain}
+pre_merge = {
+    "active_sdf": active_sdf,
+    "active_strain": active_strain,
+    "decoy_sdf": decoy_sdf,
+    "decoy_strain": decoy_strain,
+}
 
-print("Dataframe shapes before the merge of [active_sdf + active_strain] to [active_data] and [decoy_sdf + decoy_strain] to [decoy_data]:\n")
+print(
+    "Dataframe shapes before the merge of [active_sdf + active_strain] to [active_data] and [decoy_sdf + decoy_strain] to [decoy_data]:\n"
+)
 for name, df in pre_merge.items():
     print(f"{name}: {df.shape}")
 
 # %%
-post_merge = {'active_data': active_data, 'decoy_data': decoy_data}
+post_merge = {"active_data": active_data, "decoy_data": decoy_data}
 
 print("Dataframe shapes after merge to active_data and decoy_data:")
 for name, df in post_merge.items():
@@ -195,30 +228,89 @@ for name, df in post_merge.items():
 # %%
 all_data = pd.concat([active_data, decoy_data])
 
-print("Dataframe shape after concat of active_data and decoy_data to all_data\n", all_data.shape, "\n")
+print(
+    "Dataframe shape after concat of active_data and decoy_data to all_data\n",
+    all_data.shape,
+    "\n",
+)
 
 print("all_data should be addition of the inputs")
-# %%
-def plot_density(df, title_suffix):
-  # Hardcoded column names
-  activity_col = 'Activity'
-  score_col = 'r_i_docking_score'
 
-  # Create a density plot for the score of active and inactive molecules
-  sns.kdeplot(df.loc[df[activity_col] == 0, score_col], label='Inactive', fill=True)
-  sns.kdeplot(df.loc[df[activity_col] == 1, score_col], label='Active', fill=True)
-
-  # Add title and labels
-  plt.title(f'Density Plot of Docking Score for Active and Decoy Molecules ({title_suffix})')
-  plt.xlabel('Docking Score')
-  plt.ylabel('Density')
-  plt.legend(loc='best')
-
-  # Show the plot
-  plt.show()
+# %% [markdown]
+#  # Baseline
 # %%
-plot_density(all_data, title_suffix)
+plt.scatter(all_data["r_i_docking_score"], all_data["Total_E"])
+actives_all_data = all_data[all_data["Activity"] == 1]
+plt.scatter(actives_all_data["r_i_docking_score"], actives_all_data["Total_E"])
+plt.title(f"r_i_docking_score vs. Total_E ({title_suffix})")
+plt.xlabel("r_i_docking_score")
+plt.ylabel("Total_E")
+plt.legend(["Decoys", "Actives"])
+plt.show()
+
+
 # %%
+def plot_density_docking(df, title_suffix):
+    # Hardcoded column names
+    activity_col = "Activity"
+    score_col = "r_i_docking_score"
+
+    # Create a density plot for the score of active and inactive molecules
+    sns.kdeplot(df.loc[df[activity_col] == 0, score_col], label="Inactive", fill=True)
+    sns.kdeplot(df.loc[df[activity_col] == 1, score_col], label="Active", fill=True)
+
+    # Add title and labels
+    plt.title(
+        f"Density Plot of Docking Score for Active and Decoy Molecules ({title_suffix})"
+    )
+    plt.xlabel("Docking Score")
+    plt.ylabel("Density")
+    plt.legend(loc="best")
+
+    # Show the plot
+    plt.show()
+
+
+# %%
+plot_density_docking(all_data, title_suffix)
+
+
+# %%
+def plot_histogram_dscore(df, title_suffix):
+    # Hardcoded column names
+    activity_col = "Activity"
+    score_col = "r_i_docking_score"
+
+    plt.hist(
+        df.loc[df[activity_col] == 0, score_col],
+        bins=50,
+        label="Inactive",
+        alpha=0.5,
+        density=True,
+    )
+    plt.hist(
+        df.loc[df[activity_col] == 1, score_col],
+        bins=50,
+        label="Active",
+        alpha=0.5,
+        density=True,
+    )
+
+    # Add title and labels
+    plt.title(
+        f"Density Histogram of Docking Score for Active and Decoy Molecules ({title_suffix})"
+    )
+    plt.xlabel("Docking Score")
+    plt.ylabel("Density")
+    plt.legend(loc="best")
+
+    # Show the plot
+    plt.show()
+
+
+# %%
+plot_histogram_dscore(all_data, title_suffix)
+
 
 # %%
 def plot_density_strain(df, title_suffix):
@@ -241,7 +333,64 @@ def plot_density_strain(df, title_suffix):
     # Show the plot
     plt.show()
 
+
+# %%
 plot_density_strain(all_data, title_suffix)
+
+
+# %%
+def plot_histogram_strain(df, title_suffix):
+    # Hardcoded column names
+    activity_col = "Activity"
+    score_col = "Total_E"
+
+    plt.hist(
+        df.loc[df[activity_col] == 0, score_col],
+        bins=50,
+        label="Inactive",
+        alpha=0.5,
+        density=True,
+    )
+    plt.hist(
+        df.loc[df[activity_col] == 1, score_col],
+        bins=50,
+        label="Active",
+        alpha=0.5,
+        density=True,
+    )
+
+    # Add title and labels
+    plt.title(
+        f"Density Histogram of Strain Energy for Active and Decoy Molecules ({title_suffix})"
+    )
+    plt.xlabel("Total Strain Energy")
+    plt.ylabel("Density")
+    plt.legend(loc="best")
+
+    # Show the plot
+    plt.show()
+
+
+# The density parameter is set to True, which means the histogram will show the density (the number of samples in a bin divided by the size of the bin) instead of the raw count.
+# %%
+plot_histogram_strain(all_data, title_suffix)
+
+# %% [markdown]
+#  # Enrichment by Strain Thresholds
+
+# %%
+total_e_thresholds = [
+    None,
+    4,
+    4.5,
+    5.0,
+    5.5,
+    6.0,
+    7.0,
+    7.5,
+    8.0,
+]  # strain energy thresholds
+
 
 # %%
 def calculate_enrichment_parameters(df):
@@ -280,75 +429,219 @@ def calculate_enrichment_parameters(df):
 
     return df
 
+
 # %%
 all_data = calculate_enrichment_parameters(all_data)
-all_data
+
 
 # %%
-total_e_thresholds = [None, 4, 4.5, 5.0, 5.5, 6.0, 7.0, 7.5, 8.0]
+def enrichment_metrics_by_strain(df, total_e_threshold=None):
 
-# %%
-def logauc_by_strain(df, a=1e-3, total_e_threshold=None):
-    # Filter dataframe based on 'Total_E' threshold if provided
     if total_e_threshold is not None:
         df = df[df["Total_E"] <= total_e_threshold]
 
-    # Invert scores since lower scores indicate positive class
-    y_scores_inverted = -df["r_i_docking_score"]
+    df = calculate_enrichment_parameters(df).copy()
 
-    # Calculate FPR, TPR, and thresholds using sklearn
-    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+    closest_to_one_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.01).abs().argsort()[:1]
+    ]
 
-    # Select the thresholds that result in FPR >= a for log scale plotting
-    valid_indices = np.where(fpr >= a)
-    fpr_valid = fpr[valid_indices]
-    tpr_valid = tpr[valid_indices]
+    ef1 = (
+        closest_to_one_percent["Cumulative_Actives"].values[0]
+        / closest_to_one_percent["Total_Actives"].values[0]
+    ) * 100
 
-    # Calculate log of FPR for valid indices
-    log_fpr_valid = np.log10(fpr_valid)
+    closest_to_five_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.05).abs().argsort()[:1]
+    ]
+    ef5 = (
+        closest_to_five_percent["Cumulative_Actives"].values[0]
+        / closest_to_five_percent["Total_Actives"].values[0]
+    ) * 100
 
-    # Calculate the AUC for the valid range
-    linlog_auc = auc(log_fpr_valid, tpr_valid)
+    return ef1, ef5
 
-    ### NOTE TIMES 10 NOTE ###
-    log_auc = (linlog_auc / -np.log10(a)) * 10
-
-    return log_auc
 
 # %%
-def plot_log_aucs(data, thresholds, title_suffix):
-    # Calculate log_auc for each threshold and plot
-    log_aucs = [logauc_by_strain(data, total_e_threshold=t) for t in thresholds]
-    
+def bar_plot_enrichment_by_strain(data, thresholds, title_suffix):
+    # Calculate enrichment for each threshold
+    ef1s, ef5s = zip(
+        *[enrichment_metrics_by_strain(data, total_e_threshold=t) for t in thresholds]
+    )
+
     # Create labels for the x-axis
-    x_labels = [str(t) if t is not None else 'No Cutoff' for t in thresholds]
-    
-    plt.bar(range(len(thresholds)), log_aucs, tick_label=x_labels)
-    plt.title(f"Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    # Create an array with the positions of each bar on the x axis
+    x = np.arange(len(x_labels))
+
+    # Set the width of the bars
+    bar_width = 0.35
+
+    plt.bar(x - bar_width / 2, ef1s, bar_width, label="EF1%")
+    plt.bar(x + bar_width / 2, ef5s, bar_width, label="EF5%")
+    plt.title(f"Enrichment Factors by Strain Energy Cutoff ({title_suffix})")
     plt.xlabel("Strain Energy Cutoff")
-    plt.ylabel("Linear Log10 AUC (x10)")
+    plt.ylabel("Enrichment Factor (%)")
+    plt.xticks(x, x_labels)  # Set the position and labels of the xticks
+    plt.legend()
     plt.show()
 
-# %%
-plot_log_aucs(all_data, total_e_thresholds, title_suffix)
 
 # %%
-def plot_delta_log_aucs(data, thresholds, title_suffix):
-  # Calculate log_auc for 'None' threshold
-  none_log_auc = logauc_by_strain(data, total_e_threshold=None)
-  
-  # Calculate delta log_auc for each threshold and plot
-  delta_log_aucs = [logauc_by_strain(data, total_e_threshold=t) - none_log_auc for t in thresholds]
-  
-  # Create labels for the x-axis
-  x_labels = [str(t) if t is not None else 'No Cutoff' for t in thresholds]
-  
-  plt.bar(range(len(thresholds)), delta_log_aucs, tick_label=x_labels)
-  plt.title(f"Delta Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
-  plt.xlabel("Strain Energy Cutoff")
-  plt.ylabel("Delta Linear Log10 AUC (x10)")
-  plt.show()
+bar_plot_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
 
-plot_delta_log_aucs(all_data, total_e_thresholds, title_suffix)
+
+# %%
+def bar_plot_delta_enrichment_by_strain(data, thresholds, title_suffix):
+    # Calculate enrichment for each threshold
+    ef1s, ef5s = zip(
+        *[enrichment_metrics_by_strain(data, total_e_threshold=t) for t in thresholds]
+    )
+
+    # Calculate differences in enrichment metrics
+    ef1s_diff = [ef - ef1s[0] for ef in ef1s]
+    ef5s_diff = [ef - ef5s[0] for ef in ef5s]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    # Create an array with the positions of each bar on the x axis
+    x = np.arange(len(x_labels))
+
+    # Set the width of the bars
+    bar_width = 0.35
+
+    plt.bar(x - bar_width / 2, ef1s_diff, bar_width, label="EF1% Difference")
+    plt.bar(x + bar_width / 2, ef5s_diff, bar_width, label="EF5% Difference")
+    plt.title(
+        f"Difference in Enrichment Factors by Strain Energy Cutoff ({title_suffix})"
+    )
+    plt.xlabel("Strain Energy Cutoff")
+    plt.ylabel("Difference in Enrichment Factor (%)")
+    plt.xticks(x, x_labels)  # Set the position and labels of the xticks
+    plt.legend()
+    plt.show()
+
+
+# %%
+bar_plot_delta_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
+
+
+# %%
+def plot_enrichment_curve_by_strain(df, total_e_threshold=None, ax=None, color="blue"):
+
+    if total_e_threshold is not None:
+        df = df[df["Total_E"] <= total_e_threshold]
+
+    df = calculate_enrichment_parameters(df).copy()
+
+    enrichment_auc = auc(df["Percentage_Screened"], df["Fraction_Actives"])
+
+    closest_to_one_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.01).abs().argsort()[:1]
+    ]
+
+    ef1 = (
+        closest_to_one_percent["Cumulative_Actives"].values[0]
+        / closest_to_one_percent["Total_Actives"].values[0]
+    ) * 100
+
+    closest_to_five_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.05).abs().argsort()[:1]
+    ]
+    ef5 = (
+        closest_to_five_percent["Cumulative_Actives"].values[0]
+        / closest_to_five_percent["Total_Actives"].values[0]
+    ) * 100
+
+    # Plot the enrichment curve
+    ax.plot(
+        df["Percentage_Screened"] * 100,
+        df["Fraction_Actives"] * 100,
+        label="Threshold: {}\nEnrichment AUC = {:.2f}\n(EF1% = {:.1f}%)\n(EF5% = {:.0f}%)".format(
+            total_e_threshold if total_e_threshold is not None else "N/A",
+            enrichment_auc,
+            ef1,
+            ef5,
+        ),
+        color=color,
+    )
+
+    ax.legend()
+
+
+def plot_enrichment_all_thresholds(data, thresholds, title_suffix):
+    # Create a single plot
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    # Define a colormap
+    cmap = cm.get_cmap(
+        "viridis", len(thresholds) - 1
+    )  # Subtract 1 because the first color is manually set
+
+    # Plot semi-log ROC curve for each threshold
+    for i, t in enumerate(thresholds):
+        # Filter dataframe based on 'Total_E' threshold
+        df_filtered = data if t is None else data[data["Total_E"] <= t]
+
+        # Set a distinct color for the first threshold
+        color = (
+            "red" if t is None else cmap(i - 1)
+        )  # Subtract 1 because the first color is manually set
+
+        # Call the function with the filtered data
+        plot_enrichment_curve_by_strain(
+            df_filtered, total_e_threshold=t, ax=ax, color=color
+        )
+
+    ax.set_title(f"Enrichment Curves by Strain Energy Thresholds ({title_suffix})")
+    ax.set_xlabel("Percent Screened")
+    ax.set_ylabel("Percent Identified Actives")
+
+    plt.tight_layout()
+    plt.show()
+
+
+plot = plot_enrichment_all_thresholds(all_data, total_e_thresholds, title_suffix)
+
+
+# %%
+def write_enrichment_metrics(data, thresholds, title_suffix):
+    # Calculate enrichment for each threshold
+    ef1s, ef5s = zip(
+        *[enrichment_metrics_by_strain(data, total_e_threshold=t) for t in thresholds]
+    )
+
+    # Calculate the difference in enrichment metrics
+    ef1s_diff = [ef - ef1s[0] for ef in ef1s]
+    ef5s_diff = [ef - ef5s[0] for ef in ef5s]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    # Create a dataframe to hold the data
+    df = pd.DataFrame(
+        {
+            "Protein": title_suffix,
+            "Strain Energy Cutoff": x_labels,
+            "EF1%": ef1s,
+            "EF5%": ef5s,
+            "deltaEF1%": ef1s_diff,
+            "deltaEF5%": ef5s_diff,
+        }
+    )
+
+    print(f"Writing CSV to strain_enrichment_metrics_{title_suffix}.csv")
+    df.to_csv(
+        f"./papermill/lit_pcba_csv/strain_enrichment_metrics_{title_suffix}.csv",
+        index=False,
+    )
+    display(df)
+    print("CSV writing complete.")
+
+
+# %%
+write_enrichment_metrics(all_data, total_e_thresholds, title_suffix)
 
 # %%
