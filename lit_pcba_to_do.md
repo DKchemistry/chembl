@@ -449,3 +449,9 @@ This is also an issue as the actual papermill GPCR bench notebook will need to b
 - Fixing the CSV reading functions. 
 
 In the future, I should consider some sort of 'don't save' parameter for the metrics reporting. For now, we probably want to just run this in some sort of seperate backup directory and not git add/commit it. Currently, I think it would be best to commit the current state considering how I changed gitignore. 
+
+# Strain Metrics Cont. 
+
+I replicated the GPCR_bench-master/ directory structure for grids_lit-pcba, so that I could save my files in a similar way, rather than refactoring the entire saving logic to instead using some sort of "directory" variable as that set up is very tedious. 
+
+I am now hopefully able to progress through the rest of the interactive python file, once that is complete, I can return to parallel execution of the sort/strain calculations with my prior logic. I am a little worried about memory allocation when running the strain calculations.
