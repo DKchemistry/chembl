@@ -645,3 +645,1199 @@ def write_enrichment_metrics(data, thresholds, title_suffix):
 write_enrichment_metrics(all_data, total_e_thresholds, title_suffix)
 
 # %%
+# %% [markdown]
+#  # Linear Log ROC AUC by Strain Threshold
+
+# %%
+def logauc_by_strain(df, a=1e-3, total_e_threshold=None):
+    # Filter dataframe based on 'Total_E' threshold if provided
+    if total_e_threshold is not None:
+        df = df[df["Total_E"] <= total_e_threshold]
+
+    # Invert scores since lower scores indicate positive class
+    y_scores_inverted = -df["r_i_docking_score"]
+
+    # Calculate FPR, TPR, and thresholds using sklearn
+    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+
+    # Select the thresholds that result in FPR >= a for log scale plotting
+    valid_indices = np.where(fpr >= a)
+    fpr_valid = fpr[valid_indices]
+    tpr_valid = tpr[valid_indices]
+
+    # Calculate log of FPR for valid indices
+    log_fpr_valid = np.log10(fpr_valid)
+
+    # Calculate the AUC for the valid range
+    linlog_auc = auc(log_fpr_valid, tpr_valid)
+
+    ### NOTE TIMES 10 NOTE ###
+    log_auc = (linlog_auc / -np.log10(a)) * 10
+
+    return log_auc
+
+# %%
+def plot_log_aucs(data, thresholds, title_suffix):
+    # Calculate log_auc for each threshold and plot
+    log_aucs = [logauc_by_strain(data, total_e_threshold=t) for t in thresholds]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    plt.bar(range(len(thresholds)), log_aucs, tick_label=x_labels)
+    plt.title(f"Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
+    plt.xlabel("Strain Energy Cutoff")
+    plt.ylabel("Linear Log10 AUC (x10)")
+    plt.show()
+
+# %%
+plot_log_aucs(all_data, total_e_thresholds, title_suffix)
+
+# %%
+def plot_delta_log_aucs(data, thresholds, title_suffix):
+    # Calculate log_auc for 'None' threshold
+    none_log_auc = logauc_by_strain(data, total_e_threshold=None)
+
+    # Calculate delta log_auc for each threshold and plot
+    delta_log_aucs = [
+        logauc_by_strain(data, total_e_threshold=t) - none_log_auc for t in thresholds
+    ]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    plt.bar(range(len(thresholds)), delta_log_aucs, tick_label=x_labels)
+    plt.title(f"Delta Linear Log10 AUC by Strain Energy Cutoff ({title_suffix})")
+    plt.xlabel("Strain Energy Cutoff")
+    plt.ylabel("Delta Linear Log10 AUC (x10)")
+    plt.show()
+
+# %%
+
+plot_delta_log_aucs(all_data, total_e_thresholds, title_suffix)
+
+# %%
+def write_log_aucs_delta_auc(data, thresholds, title_suffix):
+    # Calculate log_auc for each threshold
+    log_aucs = [logauc_by_strain(data, total_e_threshold=t) for t in thresholds]
+
+    delta_log_aucs = [0] + [log_aucs[i] - log_aucs[0] for i in range(1, len(log_aucs))]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    # Create a dataframe to hold the data
+    df = pd.DataFrame(
+        {
+            "Protein": title_suffix,
+            "Strain Energy Cutoff": x_labels,
+            "Linear Log10 AUC (x10)": log_aucs,
+            "Delta Linear Log10 AUC (x10)": delta_log_aucs,
+        }
+    )
+
+    # Write the dataframe to a CSV file
+    df.to_csv(f"./papermill/csv/strain_log_aucs_{title_suffix}.csv", index=False)
+    display(df)
+
+# %%
+write_log_aucs_delta_auc(all_data, total_e_thresholds, title_suffix)
+
+# %%
+def plot_semi_log_roc(df, a=1e-3, total_e_threshold=None, ax=None, color="blue"):
+    # Filter dataframe based on 'Total_E' threshold if provided
+    if total_e_threshold is not None:
+        df = df[df["Total_E"] <= total_e_threshold]
+
+    # Invert scores since lower scores indicate positive class
+    y_scores_inverted = -df["r_i_docking_score"]
+
+    # Calculate FPR, TPR, and thresholds using sklearn
+    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+
+    # Select the thresholds that result in FPR >= a for log scale plotting
+    valid_indices = np.where(fpr >= a)
+    fpr_valid = fpr[valid_indices]
+    tpr_valid = tpr[valid_indices]
+
+    # Calculate log of FPR for valid indices
+    log_fpr_valid = np.log10(fpr_valid)
+
+    # Calculate LogAUC
+    log_auc = (auc(log_fpr_valid, tpr_valid) / -np.log10(a)) * 10
+
+    # Count the number of rows with Activity = 1 and the total number of rows
+    activity_1_count = df[df["Activity"] == 1].shape[0]
+    total_count = df.shape[0]
+
+    # Plot semi-log ROC curve
+    ax.plot(
+        log_fpr_valid,
+        tpr_valid,
+        label=f"Threshold: {total_e_threshold if total_e_threshold is not None else 'N/A'}, LogAUC: {log_auc:.2f}, Actives: {activity_1_count}, Total count: {total_count}",
+        color=color,
+    )
+    ax.legend()
+
+# %%
+def plot_all_thresholds(data, thresholds, title_suffix):
+    # Create a single plot
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # Define a colormap
+    cmap = cm.get_cmap(
+        "viridis", len(thresholds) - 1
+    )  # Subtract 1 because the first color is manually set
+
+    # Plot semi-log ROC curve for each threshold
+    for i, t in enumerate(thresholds):
+        # Filter dataframe based on 'Total_E' threshold
+        df_filtered = data if t is None else data[data["Total_E"] <= t]
+
+        # Set a distinct color for the first threshold
+        color = (
+            "red" if t is None else cmap(i - 1)
+        )  # Subtract 1 because the first color is manually set
+
+        # Call the function with the filtered data
+        plot_semi_log_roc(df_filtered, total_e_threshold=t, ax=ax, color=color)
+
+    ax.set_title(f"Strain Energy Thresholds ({title_suffix})")
+    ax.set_xlabel("log(FPR)")
+    ax.set_ylabel("TPR")
+
+    plt.tight_layout()
+    plt.show()
+
+# %%
+plot = plot_all_thresholds(all_data, total_e_thresholds, title_suffix)
+
+# %%
+# %% [markdown]
+#  # ROC AUC by Strain Threshold
+
+# %%
+def plot_roc_curve_inverted(data, total_e_threshold, ax, title_suffix, color="blue"):
+    """
+    Plot the ROC curve for the given true labels and inverted scores.
+
+    :param data: The DataFrame containing the data.
+    :param total_e_threshold: The threshold for the 'Total_E' column. If this is not None, the data is filtered to only include rows where 'Total_E' is less than or equal to this threshold.
+    :param ax: The axes object to plot on.
+    :param title_suffix: The suffix to add to the title of the plot.
+    :param color: The color to use for the ROC curve.
+    """
+    # Filter the data based on 'Total_E' threshold
+    df = (
+        data
+        if total_e_threshold is None
+        else data[data["Total_E"] <= total_e_threshold]
+    )
+
+    # Get the true labels and scores
+    y_true = df["Activity"]
+    y_scores = df["r_i_docking_score"]
+
+    # Inverting the scores
+    y_scores_inverted = -y_scores
+
+    # Compute the ROC curve and AUC with inverted scores
+    fpr, tpr, thresholds = roc_curve(y_true, y_scores_inverted)
+    roc_auc = auc(fpr, tpr)
+
+    # Count the number of rows with Activity = 1 and the total number of rows
+    activity_1_count = df[df["Activity"] == 1].shape[0]
+    total_count = df.shape[0]
+
+    # Plotting the ROC curve
+    # ax.plot(fpr, tpr, lw=2, label=f"ROC curve (AUC = {roc_auc:.2f}), Actives: {activity_1_count}, Total Count: {total_count}", color=color)
+
+    # Plotting the ROC curve
+    ax.plot(
+        fpr,
+        tpr,
+        lw=2,
+        label=f"Threshold: {total_e_threshold if total_e_threshold is not None else 'N/A'}, ROC curve (AUC = {roc_auc:.2f}), Actives: {activity_1_count}, Total Count: {total_count}",
+        color=color,
+    )
+
+    ax.set_xlim([0.0, 1.0])
+    ax.set_ylim([0.0, 1.05])
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.set_title(
+        f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
+    )
+
+
+
+# %%
+def plot_roc_curves_all_thresholds(data, thresholds, title_suffix):
+    # Create a single plot
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # Define a colormap
+    cmap = cm.get_cmap(
+        "viridis", len(thresholds) - 1
+    )  # Subtract 1 because the first color is manually set
+
+    # Plot ROC curve for each threshold
+    for i, t in enumerate(thresholds):
+        # Set a distinct color for the first threshold
+        color = (
+            "red" if t is None else cmap(i - 1)
+        )  # Subtract 1 because the first color is manually set
+
+        plot_roc_curve_inverted(
+            data, total_e_threshold=t, ax=ax, title_suffix=title_suffix, color=color
+        )
+
+    # Plot the random classifier line after all the ROC curves
+    ax.plot(
+        [0, 1], [0, 1], lw=2, linestyle="--", label="Random Classifier", color="grey"
+    )
+
+    ax.legend()
+
+    plt.show()
+
+
+
+# %%
+plot_roc_curves_all_thresholds(all_data, total_e_thresholds, title_suffix)
+
+
+
+# %%
+def bar_plot_difference_in_auc_by_strain(data, thresholds, title_suffix):
+    # Create a list to hold AUC values
+    auc_values = []
+
+    # Loop over each threshold
+    for t in thresholds:
+        # Filter the data based on 'Total_E' threshold
+        df = data if t is None else data[data["Total_E"] <= t]
+
+        # Get the true labels and scores
+        y_true = df["Activity"]
+        y_scores = df["r_i_docking_score"]
+
+        # Inverting the scores
+        y_scores_inverted = -y_scores
+
+        # Compute the ROC curve and AUC with inverted scores
+        fpr, tpr, roc_thresholds = roc_curve(y_true, y_scores_inverted)
+        roc_auc = auc(fpr, tpr)
+
+        # Add AUC to the list
+        auc_values.append(roc_auc)
+
+    # Calculate differences in AUC
+    auc_diff = [auc - auc_values[0] for auc in auc_values]
+
+    # Create labels for the x-axis
+    x_labels = [str(t) if t is not None else "No Cutoff" for t in thresholds]
+
+    # Create an array with the positions of each bar on the x axis
+    x = np.arange(len(x_labels))
+
+    # Set the width of the bars
+    bar_width = 0.35
+
+    plt.bar(x, auc_diff, bar_width, label="deltaAUC")
+    plt.title(f"Difference in AUC by Strain Energy Cutoff ({title_suffix})")
+    plt.xlabel("Strain Energy Cutoff")
+    plt.ylabel("Difference in AUC")
+    plt.xticks(x, x_labels)  # Set the position and labels of the xticks
+    plt.legend()
+    plt.show()
+
+
+
+# %%
+bar_plot_difference_in_auc_by_strain(all_data, total_e_thresholds, title_suffix)
+
+
+
+# %%
+def write_roc_metrics(data, thresholds, title_suffix):
+    # Create a list to hold the data
+    data_list = []
+
+    # List to hold AUC values
+    auc_values = []
+
+    # Loop over each threshold
+    for t in thresholds:
+        # Filter the data based on 'Total_E' threshold
+        df = data if t is None else data[data["Total_E"] <= t]
+
+        # Get the true labels and scores
+        y_true = df["Activity"]
+        y_scores = df["r_i_docking_score"]
+
+        # Inverting the scores
+        y_scores_inverted = -y_scores
+
+        # Compute the ROC curve and AUC with inverted scores
+        fpr, tpr, thresholds = roc_curve(y_true, y_scores_inverted)
+        roc_auc = auc(fpr, tpr)
+
+        # Add AUC to the list
+        auc_values.append(roc_auc)
+
+        # Count the number of rows with Activity = 1 and the total number of rows
+        activity_1_count = df[df["Activity"] == 1].shape[0]
+        total_count = df.shape[0]
+
+        # Add the data to the list
+        data_list.append(
+            {
+                "Protein": title_suffix,
+                "Strain Energy Cutoff": t if t is not None else "No Cutoff",
+                "ROC_AUC": roc_auc,
+                "Actives": activity_1_count,
+                "Total Count": total_count,
+            }
+        )
+
+    # Calculate differences in AUC
+    auc_diff = [auc - auc_values[0] for auc in auc_values]
+
+    # Add deltaAUC to the data list
+    for i in range(len(data_list)):
+        data_list[i]["deltaAUC"] = auc_diff[i]
+
+    # Create a dataframe from the list
+    df = pd.DataFrame(data_list)
+
+    # Write the dataframe to a CSV file
+    df.to_csv(f"./papermill/csv/strain_roc_metrics_{title_suffix}.csv", index=False)
+    display(df)
+
+
+
+# %%
+write_roc_metrics(all_data, total_e_thresholds, title_suffix)
+
+# %%
+# %% [markdown]
+#  # Pareto
+
+# %%
+data = all_data
+chosen_rank_amount = 20
+rank_thresholds = [10, 20]
+
+
+
+# %%
+def identify_pareto(scores):
+    population_size = scores.shape[0]
+    pareto_front = np.ones(population_size, dtype=bool)
+    for i in range(population_size):
+        for j in range(population_size):
+            if all(scores[j] <= scores[i]) and any(scores[j] < scores[i]):
+                pareto_front[i] = 0
+                break
+    return np.where(pareto_front == 1)[0]
+
+
+def find_pareto_ranks(scores, max_ranks=100):
+    ranks = []
+    remaining_scores = scores.copy()
+    remaining_indices = np.arange(scores.shape[0])
+    for _ in range(max_ranks):
+        pareto_indices = identify_pareto(remaining_scores)
+        ranks.append(remaining_indices[pareto_indices])
+        remaining_scores = np.delete(remaining_scores, pareto_indices, axis=0)
+        remaining_indices = np.delete(remaining_indices, pareto_indices)
+        if remaining_scores.shape[0] == 0:
+            break
+    return ranks
+
+
+
+# %%
+# Extract the scores for the entire dataset
+scores = data[["r_i_docking_score", "Total_E"]].values
+
+# Find the `chosen_rank_amount` of Pareto fronts until all points are classified or a max limit is reached
+pareto_ranks_indices = find_pareto_ranks(
+    scores, max_ranks=chosen_rank_amount
+)  # Adjust max_ranks as needed
+
+
+# %%
+# Determine the actual number of ranks found
+num_ranks = len(pareto_ranks_indices)
+
+# Plot the baseline data distribution
+plt.figure(figsize=(12, 10))
+plt.scatter(
+    data["r_i_docking_score"],
+    data["Total_E"],
+    color="lightgrey",
+    label="Baseline Data",
+    alpha=0.5,
+)
+
+# Generate colors for each rank dynamically using a colormap
+colormap = viridis
+norm = Normalize(vmin=0, vmax=num_ranks - 1)
+
+for i, indices in enumerate(pareto_ranks_indices):
+    rank_data = data.iloc[indices]
+    plt.scatter(
+        rank_data["r_i_docking_score"],
+        rank_data["Total_E"],
+        color=colormap(norm(i)),
+        label=f"Rank {i+1}",
+    )
+
+# Create a custom legend
+sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
+sm.set_array([])
+cbar = plt.colorbar(sm, ax=plt.gca(), ticks=np.linspace(0, num_ranks - 1, num_ranks))
+cbar.ax.set_yticklabels([f"Rank {i+1}" for i in range(num_ranks)])
+cbar.set_label("Pareto Front Rank")
+
+plt.title(
+    f"{chosen_rank_amount} Ranks of Pareto Fronts with {title_suffix} Baseline Data Distribution"
+)
+plt.xlabel("r_i_docking_score")
+plt.ylabel("Total_E")
+
+plt.grid(True)
+plt.show()
+
+
+# %%
+# Count the number of Pareto points per rank and the total
+num_points_per_rank = [len(indices) for indices in pareto_ranks_indices]
+total_points = sum(num_points_per_rank)
+
+# Print the counts
+print("Number of Pareto points per rank:")
+for rank, count in enumerate(num_points_per_rank, start=1):
+    print(f"Rank {rank}: {count} points")
+
+print(f"\nTotal Pareto points across all ranks: {total_points}")
+
+
+# %%
+all_pareto_ranks_indices = np.concatenate(pareto_ranks_indices)
+# display(data.iloc[all_pareto_ranks_indices])
+
+
+# %%
+pareto_front_df = data.iloc[all_pareto_ranks_indices]
+
+
+# %%
+plot_density_docking(pareto_front_df, title_suffix)
+
+
+# %%
+plot_density_strain(pareto_front_df, title_suffix)
+
+
+# %%
+plt.scatter(pareto_front_df["r_i_docking_score"], pareto_front_df["Total_E"])
+actives_pareto_front_df = pareto_front_df[pareto_front_df["Activity"] == 1]
+plt.scatter(
+    actives_pareto_front_df["r_i_docking_score"], actives_pareto_front_df["Total_E"]
+)
+plt.title(f"r_i_docking_score vs. Total_E ({title_suffix})")
+plt.xlabel("r_i_docking_score")
+plt.ylabel("Total_E")
+plt.legend(["Decoys", "Actives"])
+plt.show()
+
+
+# %% [markdown]
+#  # Pareto Enrichment
+
+# %%
+pareto_front_df = calculate_enrichment_parameters(pareto_front_df)
+
+
+
+# %%
+def enrichment_metrics(df):
+    df = calculate_enrichment_parameters(df)
+    closest_to_one_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.01).abs().argsort()[:1]
+    ]
+    ef1 = (
+        closest_to_one_percent["Cumulative_Actives"].values[0]
+        / closest_to_one_percent["Total_Actives"].values[0]
+        * 100
+    )
+    closest_to_five_percent = df.iloc[
+        (df["Percentage_Screened"] - 0.05).abs().argsort()[:1]
+    ]
+    ef5 = (
+        closest_to_five_percent["Cumulative_Actives"].values[0]
+        / closest_to_five_percent["Total_Actives"].values[0]
+        * 100
+    )
+    return ef1, ef5
+
+
+
+# %%
+def compare_enrichment_metrics_for_ranks(
+    df, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
+):
+    # Calculate enrichment for the entire dataset
+    ef1_full, ef5_full = enrichment_metrics(df)
+
+    # Prepare plot
+    labels = ["Baseline"] + [f"Top {rank} Ranks" for rank in rank_thresholds]
+    ef1_values = [ef1_full]
+    ef5_values = [ef5_full]
+
+    # Calculate and append metrics for each specified rank threshold
+    for rank_threshold in rank_thresholds:
+        top_ranks_indices = np.concatenate(pareto_ranks_indices[:rank_threshold])
+        subset_data = df.iloc[top_ranks_indices]
+        ef1_subset, ef5_subset = enrichment_metrics(subset_data)
+        ef1_values.append(ef1_subset)
+        ef5_values.append(ef5_subset)
+
+    # Plotting
+    x = np.arange(len(labels))  # the label locations
+    width = 0.35  # the width of the bars
+
+    fig, ax = plt.subplots(
+        # figsize=(10, 6)
+    )
+    rects1 = ax.bar(x - width / 2, ef1_values, width, label="EF1%")
+    rects2 = ax.bar(x + width / 2, ef5_values, width, label="EF5%")
+
+    ax.set_ylabel("Enrichment Factor (%)")
+    ax.set_title(
+        f"Enrichment Factors Comparison by Pareto Rank Threshold {title_suffix}"
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=45, ha="right")
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+# Usage example
+compare_enrichment_metrics_for_ranks(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
+)
+
+
+
+# %%
+def bar_plot_delta_enrichment_by_pareto(
+    df, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    # Calculate enrichment for the entire dataset as baseline
+    ef1_full, ef5_full = enrichment_metrics(df)
+
+    # Initialize lists to store delta values
+    delta_ef1s = []
+    delta_ef5s = []
+
+    # Calculate metrics for each specified rank threshold and compute deltas
+    for rank_threshold in rank_thresholds:
+        top_ranks_indices = np.concatenate(pareto_ranks_indices[:rank_threshold])
+        subset_data = df.iloc[top_ranks_indices]
+        ef1_subset, ef5_subset = enrichment_metrics(subset_data)
+
+        # Calculate deltas compared to baseline
+        delta_ef1s.append(ef1_subset - ef1_full)
+        delta_ef5s.append(ef5_subset - ef5_full)
+
+    # Create labels for the x-axis
+    labels = [f"Top {rank} Ranks" for rank in rank_thresholds]
+
+    # Create an array with the positions of each bar on the x axis
+    x = np.arange(len(labels))
+
+    # Set the width of the bars
+    bar_width = 0.35
+
+    # Plotting
+    plt.figure()
+    plt.bar(x - bar_width / 2, delta_ef1s, bar_width, label="ΔEF1%")
+    plt.bar(x + bar_width / 2, delta_ef5s, bar_width, label="ΔEF5%")
+
+    plt.title(f"Delta Enrichment Factors by Pareto Rank Threshold ({title_suffix})")
+    plt.xlabel("Pareto Rank Threshold")
+    plt.ylabel("Delta Enrichment Factor (%)")
+    plt.xticks(x, labels, rotation=45, ha="right")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+# Usage example, assuming `data`, `pareto_ranks_indices`, and `title_suffix` are defined
+bar_plot_delta_enrichment_by_pareto(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
+)
+
+
+
+# %%
+def plot_enrichment_curve_by_pareto(
+    df, pareto_indices, ax, label_prefix="", color="red"
+):
+    df = calculate_enrichment_parameters(df)
+    ef1, ef5 = enrichment_metrics(df)
+    enrichment_auc = auc(df["Percentage_Screened"], df["Fraction_Actives"])
+
+    # Plot the enrichment curve
+    ax.plot(
+        df["Percentage_Screened"] * 100,
+        df["Fraction_Actives"] * 100,
+        label=f"{label_prefix}\nEnrichment AUC = {enrichment_auc:.2f}\n(EF1% = {ef1:.1f}%)\n(EF5% = {ef5:.0f}%)",
+        color=color,
+    )
+    ax.legend()
+
+
+def plot_enrichment_curves_by_pareto_ranks(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot for the entire dataset as a baseline
+    plot_enrichment_curve_by_pareto(
+        data, np.arange(len(data)), ax, label_prefix="Baseline", color="red"
+    )
+
+    # Define a colormap
+    cmap = plt.get_cmap("viridis", len(rank_thresholds))
+
+    # Plot enrichment curves for specified Pareto rank thresholds
+    for i, rank_threshold in enumerate(rank_thresholds):
+        top_ranks_indices = np.concatenate(pareto_ranks_indices[:rank_threshold])
+        subset_data = data.iloc[top_ranks_indices]
+        plot_enrichment_curve_by_pareto(
+            subset_data,
+            top_ranks_indices,
+            ax,
+            label_prefix=f"Top {rank_threshold} Ranks",
+            color=cmap(i),
+        )
+
+    ax.set_title(f"Enrichment Curves by Pareto Rank Thresholds ({title_suffix})")
+    ax.set_xlabel("Percent Screened (%)")
+    ax.set_ylabel("Percent Identified Actives (%)")
+    plt.tight_layout()
+    plt.show()
+
+
+# Example usage
+plot_enrichment_curves_by_pareto_ranks(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix
+)
+
+
+
+# %%
+def write_enrichment_metrics_pareto(
+    df, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    # Calculate enrichment for the entire dataset as baseline
+    ef1_full, ef5_full = enrichment_metrics(df)
+
+    # Initalize lists to store ef1 and ef5 values
+    ef1_values = [ef1_full]
+    ef5_values = [ef5_full]
+
+    # Initialize lists to store delta values
+    delta_ef1s = [0]  # The difference in EF1% for the baseline is 0
+    delta_ef5s = [0]  # The difference in EF5% for the baseline is 0
+
+    # Calculate metrics for each specified rank threshold and compute deltas
+    for rank_threshold in rank_thresholds:
+        top_ranks_indices = np.concatenate(pareto_ranks_indices[:rank_threshold])
+        subset_data = df.iloc[top_ranks_indices]
+        ef1_subset, ef5_subset = enrichment_metrics(subset_data)
+
+        # Append metrics to lists
+        ef1_values.append(ef1_subset)
+        ef5_values.append(ef5_subset)
+
+        # Calculate deltas compared to baseline
+        delta_ef1s.append(ef1_subset - ef1_full)
+        delta_ef5s.append(ef5_subset - ef5_full)
+
+    # Create labels for the x-axis
+    labels = ["No Cutoff"] + [f"Top {rank} Pareto Ranks" for rank in rank_thresholds]
+
+    # Create a DataFrame with the data
+    data = {
+        "Protein": title_suffix,
+        "Strain Energy Cutoff": labels,  # mimic prior data column header
+        "EF1%": ef1_values,
+        "EF5%": ef5_values,
+        "deltaEF1%": delta_ef1s,
+        "deltaEF5%": delta_ef5s,
+    }
+    df_to_csv = pd.DataFrame(data)
+
+    # Write the DataFrame to a CSV file
+    df_to_csv.to_csv(
+        f"./papermill/csv/strain_enrichment_metrics_pareto_{title_suffix}.csv",
+        index=False,
+    )
+    display(df_to_csv)
+
+
+write_enrichment_metrics_pareto(
+    data, pareto_ranks_indices, [10, 20], title_suffix=title_suffix
+)
+
+
+# %% [markdown]
+#  # Pareto Linear Log ROC AUC
+
+# %%
+def logauc_by_pareto(df, pareto_ranks_indices, rank_thresholds, a=1e-3):
+    # Filter the data based on the Pareto rank threshold, if provided
+    if pareto_ranks_indices is not None:
+        df = df.iloc[np.concatenate(pareto_ranks_indices[:rank_thresholds])]
+
+    print(df.shape)
+
+    y_scores_inverted = -df["r_i_docking_score"]
+
+    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+
+    valid_indices = np.where(fpr >= a)
+    fpr_valid = fpr[valid_indices]
+    tpr_valid = tpr[valid_indices]
+
+    log_fpr_valid = np.log10(fpr_valid)
+
+    linlog_auc = auc(log_fpr_valid, tpr_valid)
+
+    ### NOTE TIMES 10 NOTE ###
+    log_auc = (linlog_auc / -np.log10(a)) * 10
+
+    return log_auc
+
+
+
+# %%
+def plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
+    # Calculate log AUC for the entire dataset
+    log_auc_all = logauc_by_pareto(data, None, None)
+
+    # Calculate log AUC for each rank threshold
+    log_aucs = [log_auc_all] + [
+        logauc_by_pareto(data, pareto_ranks_indices, rank_threshold)
+        for rank_threshold in rank_thresholds
+    ]
+
+    # Create labels for "All Data" and each rank threshold
+    labels = ["Baseline"] + [f"Top {rank} Ranks" for rank in rank_thresholds]
+
+    plt.bar(range(len(labels)), log_aucs, tick_label=labels)
+    plt.title(f"Linear Log10 AUC by Pareto Rank Thresholds ({title_suffix})")
+    plt.xlabel("Pareto Rank Threshold")
+    plt.ylabel("Linear Log10 AUC (x10)")
+    plt.show()
+
+
+
+# %%
+plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
+
+
+# %%
+def plot_delta_log_aucs_pareto(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    # Calculate log AUC for the entire dataset
+    log_auc_all = logauc_by_pareto(data, None, None)
+
+    # Calculate delta log AUC for each rank threshold
+    delta_log_aucs = [log_auc_all - log_auc_all] + [
+        logauc_by_pareto(data, pareto_ranks_indices, rank_threshold) - log_auc_all
+        for rank_threshold in rank_thresholds
+    ]
+
+    # Create labels for "All Data" and each rank threshold
+    labels = ["Baseline"] + [f"Top {rank} Ranks" for rank in rank_thresholds]
+
+    plt.bar(range(len(labels)), delta_log_aucs, tick_label=labels)
+    plt.title(f"Delta Linear Log10 AUC by Pareto Rank Thresholds ({title_suffix})")
+    plt.xlabel("Pareto Rank Threshold")
+    plt.ylabel("Delta Linear Log10 AUC (x10)")
+    plt.show()
+
+
+
+# %%
+plot_delta_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
+
+
+# %%
+def plot_semi_log_roc_pareto(
+    df, a=1e-3, pareto_ranks_indices=None, rank_threshold=None, ax=None, color="blue"
+):
+    # Filter the data based on the Pareto rank threshold, if provided
+    if pareto_ranks_indices is not None:
+        df = df.iloc[np.concatenate(pareto_ranks_indices[:rank_threshold])]
+
+    y_scores_inverted = -df["r_i_docking_score"]
+
+    fpr, tpr, _ = roc_curve(df["Activity"], y_scores_inverted)
+
+    valid_indices = np.where(fpr >= a)
+    fpr_valid = fpr[valid_indices]
+    tpr_valid = tpr[valid_indices]
+
+    log_fpr_valid = np.log10(fpr_valid)
+
+    linlog_auc = auc(log_fpr_valid, tpr_valid) / -np.log10(a)
+
+    activity_1_count = df[df["Activity"] == 1].shape[0]
+    total_count = df.shape[0]
+
+    ax.plot(
+        log_fpr_valid,
+        tpr_valid,
+        label=f"Pareto Rank: {rank_threshold if rank_threshold is not None else 'N/A'}, LogAUC: {linlog_auc:.2f}, Actives: {activity_1_count}, Total count: {total_count}",
+        color=color,
+    )
+    ax.legend()
+
+
+
+# %%
+def plot_all_thresholds_pareto(df, pareto_ranks_indices, rank_thresholds, title_suffix):
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    plot_semi_log_roc_pareto(
+        df, a=1e-3, pareto_ranks_indices=None, rank_threshold=None, ax=ax, color="red"
+    )
+
+    cmap = cm.get_cmap("viridis", len(rank_thresholds) + 1)
+
+    for i, rank_threshold in enumerate(rank_thresholds):
+        plot_semi_log_roc_pareto(
+            df,
+            a=1e-3,
+            pareto_ranks_indices=pareto_ranks_indices,
+            rank_threshold=rank_threshold,
+            ax=ax,
+            color=cmap(i),
+        )
+
+    ax.set_title(f"Pareto Rank Thresholds ({title_suffix})")
+    ax.set_xlabel("log(FPR)")
+    ax.set_ylabel("TPR")
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+# %%
+plot_all_thresholds_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
+
+
+# %%
+def write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
+    # Calculate log AUC for the entire dataset
+    log_auc_all = logauc_by_pareto(data, None, None)
+
+    # Calculate log AUC for each rank threshold
+    log_aucs = [log_auc_all] + [
+        logauc_by_pareto(data, pareto_ranks_indices, rank_threshold)
+        for rank_threshold in rank_thresholds
+    ]
+
+    # Calculate delta log AUC for each rank threshold
+    delta_log_aucs = [log_auc_all - log_auc_all] + [
+        logauc_by_pareto(data, pareto_ranks_indices, rank_threshold) - log_auc_all
+        for rank_threshold in rank_thresholds
+    ]
+
+    # Create labels for "All Data" and each rank threshold
+    labels = ["No Cutoff"] + [f"Top {rank} Pareto Ranks" for rank in rank_thresholds]
+
+    # Create a dataframe to hold the data
+    df = pd.DataFrame(
+        {
+            "Protein": title_suffix,
+            "Strain Energy Cutoff": labels,
+            "Linear Log10 AUC (x10)": log_aucs,
+            "Delta Linear Log10 AUC (x10)": delta_log_aucs,
+        }
+    )
+
+    # Write the dataframe to a CSV file
+    df.to_csv(f"./papermill/csv/strain_log_aucs_pareto_{title_suffix}.csv", index=False)
+    display(df)
+
+
+
+# %%
+write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
+
+
+# %% [markdown]
+#  # Pareto ROC AUC
+
+# %%
+def plot_roc_curve_inverted_pareto(
+    data, pareto_ranks_indices, rank_threshold, ax, title_suffix, color="blue"
+):
+    # Filter the data based on 'Total_E' threshold
+    if pareto_ranks_indices is None:
+        df = data
+    else:
+        df = data.iloc[np.concatenate(pareto_ranks_indices[:rank_threshold])]
+
+    # Get the true labels and scores
+    y_true = df["Activity"]
+    y_scores = df["r_i_docking_score"]
+
+    # Inverting the scores
+    y_scores_inverted = -y_scores
+
+    # Compute the ROC curve and AUC with inverted scores
+    fpr, tpr, thresholds = roc_curve(y_true, y_scores_inverted)
+    roc_auc = auc(fpr, tpr)
+
+    # Count the number of rows with Activity = 1 and the total number of rows
+    activity_1_count = df[df["Activity"] == 1].shape[0]
+    total_count = df.shape[0]
+
+    # Plotting the ROC curve
+    ax.plot(
+        fpr,
+        tpr,
+        lw=2,
+        label=f"Pareto Rank: {rank_threshold if rank_thresholds is not None else 'N/A'}, ROC curve (AUC = {roc_auc:.2f}), Actives: {activity_1_count}, Total Count: {total_count}",
+        color=color,
+    )
+
+    ax.set_xlim([0.0, 1.0])
+    ax.set_ylim([0.0, 1.05])
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.set_title(
+        f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
+    )
+
+
+
+# %%
+def plot_all_roc_thresholds_pareto(
+    df, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    plot_roc_curve_inverted_pareto(
+        df,
+        pareto_ranks_indices=None,
+        rank_threshold=None,
+        ax=ax,
+        color="red",
+        title_suffix=title_suffix,
+    )
+
+    cmap = cm.get_cmap("viridis", len(rank_thresholds) + 1)
+
+    for i, rank_threshold in enumerate(rank_thresholds):
+        plot_roc_curve_inverted_pareto(
+            df,
+            pareto_ranks_indices=pareto_ranks_indices,
+            rank_threshold=rank_threshold,
+            ax=ax,
+            color=cmap(i),
+            title_suffix=title_suffix,
+        )
+
+    ax.set_title(f"Pareto Rank Thresholds ({title_suffix})")
+    ax.set_xlabel("FPR")
+    ax.set_ylabel("TPR")
+
+    ax.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+# %%
+plot_all_roc_thresholds_pareto(
+    df=data,
+    pareto_ranks_indices=pareto_ranks_indices,
+    rank_thresholds=rank_thresholds,
+    title_suffix=title_suffix,
+)
+
+
+
+# %%
+def bar_plot_difference_in_auc_by_pareto(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix
+):
+    # Get the true labels and scores for the entire dataset
+    y_true = data["Activity"]
+    y_scores = data["r_i_docking_score"]
+
+    # Inverting the scores
+    y_scores_inverted = -y_scores
+
+    # Compute the ROC curve and AUC with inverted scores for the entire dataset
+    fpr, tpr, roc_thresholds = roc_curve(y_true, y_scores_inverted)
+    baseline_auc = auc(fpr, tpr)
+
+    # Create a list to hold AUC values
+    auc_values = []
+
+    # Add the baseline AUC to the list of AUC values
+    auc_values.append(baseline_auc)
+
+    # Loop over each rank threshold
+    for rank_threshold in rank_thresholds:
+        # Filter the data based on Pareto rank threshold
+        df = (
+            data
+            if rank_threshold is None
+            else data.iloc[np.concatenate(pareto_ranks_indices[:rank_threshold])]
+        )
+
+        # Get the true labels and scores
+        y_true = df["Activity"]
+        y_scores = df["r_i_docking_score"]
+
+        # Inverting the scores
+        y_scores_inverted = -y_scores
+
+        # Compute the ROC curve and AUC with inverted scores
+        fpr, tpr, roc_thresholds = roc_curve(y_true, y_scores_inverted)
+        roc_auc = auc(fpr, tpr)
+
+        # Add AUC to the list
+        auc_values.append(roc_auc)
+
+    # Calculate differences in AUC against the baseline
+    auc_diff = [auc - baseline_auc for auc in auc_values]
+
+    # Create labels for the x-axis
+    x_labels = ["Baseline"] + [
+        str(t) if t is not None else "No Cutoff" for t in rank_thresholds
+    ]
+
+    # Create an array with the positions of each bar on the x axis
+    x = np.arange(len(x_labels))
+
+    # Set the width of the bars
+    bar_width = 0.35
+
+    plt.bar(x, auc_diff, bar_width, label="deltaAUC")
+    plt.title(f"Difference in AUC by Pareto Rank Threshold ({title_suffix})")
+    plt.xlabel("Pareto Rank Threshold")
+    plt.ylabel("Difference in AUC")
+    plt.xticks(x, x_labels)  # Set the position and labels of the xticks
+    plt.legend()
+    plt.show()
+
+
+
+# %%
+bar_plot_difference_in_auc_by_pareto(
+    data, pareto_ranks_indices, rank_thresholds, title_suffix
+)
+
+
+
+# %%
+def write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix):
+    # Create a list to hold the data
+    data_list = []
+
+    # Get the true labels and scores for the entire dataset
+    y_true = data["Activity"]
+    y_scores = data["r_i_docking_score"]
+
+    # Inverting the scores
+    y_scores_inverted = -y_scores
+
+    # Compute the ROC curve and AUC with inverted scores for the entire dataset
+    fpr, tpr, thresholds = roc_curve(y_true, y_scores_inverted)
+    baseline_auc = auc(fpr, tpr)
+
+    # Count the number of rows with Activity = 1 and the total number of rows for the entire dataset
+    activity_1_count = data[data["Activity"] == 1].shape[0]
+    total_count = data.shape[0]
+
+    # Add the baseline data to the list
+    data_list.append(
+        {
+            "Protein": title_suffix,
+            "Strain Energy Cutoff": "No Cutoff",
+            "ROC_AUC": baseline_auc,
+            "Actives": activity_1_count,
+            "Total Count": total_count,
+            "deltaAUC": 0,  # The difference in AUC for the baseline is 0
+        }
+    )
+
+    # Loop over each rank threshold
+    for rank_threshold in rank_thresholds:
+        # Filter the data based on Pareto rank threshold
+        df = data.iloc[np.concatenate(pareto_ranks_indices[:rank_threshold])]
+
+        # Get the true labels and scores
+        y_true = df["Activity"]
+        y_scores = df["r_i_docking_score"]
+
+        # Inverting the scores
+        y_scores_inverted = -y_scores
+
+        # Compute the ROC curve and AUC with inverted scores
+        fpr, tpr, thresholds = roc_curve(y_true, y_scores_inverted)
+        roc_auc = auc(fpr, tpr)
+
+        # Count the number of rows with Activity = 1 and the total number of rows
+        activity_1_count = df[df["Activity"] == 1].shape[0]
+        total_count = df.shape[0]
+
+        # Add the data to the list
+        data_list.append(
+            {
+                "Protein": title_suffix,
+                "Strain Energy Cutoff": "Top {} Pareto Ranks".format(rank_threshold),
+                "ROC_AUC": roc_auc,
+                "Actives": activity_1_count,
+                "Total Count": total_count,
+                "deltaAUC": roc_auc
+                - baseline_auc,  # Calculate the difference in AUC against the baseline
+            }
+        )
+
+    # Create a dataframe from the list
+    df = pd.DataFrame(data_list)
+
+    # Write the dataframe to a CSV file
+    df.to_csv(
+        f"./papermill/csv/strain_roc_metrics_pareto_{title_suffix}.csv", index=False
+    )
+    display(df)
+
+
+
+# %%
+write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix)
