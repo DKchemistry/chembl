@@ -462,7 +462,97 @@ Testing the final section, "Pareto Ranks as Scores". This calculation will take 
 
 # # LIT PCBA 
 
-- `glide_sort` 
+- `glide_sort`
+
+- - NOTE: Naming convention changed for the output files. I am simply replacing `.sdfgz` for `.sdf` between input and output, I forgot to add the `_sorted` prefix I originally planned for. This is fine just be aware of it.
+- - NOTE: While some files (e.g. ADRB2) have quite a large amount of inactives (>100K), other targets are *considerably* smaller. See this example: 
+
+```
+Glide Sort
+------------------------------------------------------------------------------
+REPORT OF BEST 7759 POSES
+The sorted ligand structures were written to the file:
+/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/MTORC1/MTORC1_4dri_inactive_glide_lib.sdf
+
+```
+
+This is much smaller than what is mentioned on their website for MTORC1: 
+
+| AID   | Set    | Target | Ligands | Actives | Inactives | PDB templates |
+|-------|--------|--------|---------|---------|-----------|---------------|
+| 493208| MTORC1 | Mechanistic target of rapamycin | Inhibitors | 97 | 32972 | 11 |
+
+It is very much possible to lose a fair amount of ligands to the binding pocket itself (I have seen this in my own research, such as a Deep Docking run of GPR3, where I was docking less than 20% of my intended molecules). But this is a pretty sharp decrease. I think its worth investigating just to double check. 
+
+However, when investigating the actual job log. I see something pretty strange: 
+
+`Some jobs failed: 7765 of 8003 ligands done.`
+
+The failure isn't that weird (I don't think), but why are there only 8K ligands? 
+
+The command is: 
+
+`Commandline    : /mnt/data/dk/Schrodinger_adv_2021_1/glide -HOST localhost:100 -NJOBS 450 -OVERWRITE -JOBNAME MTORC1_4dri_inactive_glide MTORC1_4dri_inactive.in`
+
+If we check the in file: 
+
+```sh
+$ cat MTORC1_4dri_inactive.in
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/MTORC1/MTORC1_4dri_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/MTORC1/inactives_rdkit.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
+```
+Now let's go check `inactives_rdkit.sdf` on Tobias
+
+Examining the log (`inactives_rdkit.log`) for the LigPrep job returns: 
+
+`Commandline    : /mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/MTORC1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -WAIT -JOBNAME MTORC1_inactives_rdkit_ligprep`
+
+Taking a line count of our input: `/mnt/data/dk/work/lit-pcba/MTORC1/inactives_rdkit.smi`
+
+```sh
+$ wc -l inactives_rdkit.smi
+    41057 inactives_rdkit.smi
+```
+So 41K, which is reasonable given the stereochemical enumeration. The failed ligands seem to be because of an overuse of licenses during LigPrep. We can see that in `inactives_rdkit.log`, towards the end of the file: 
+
+```
+--------------------------------------------------------------------------------
+JobId          : karla-0-65b870ce
+Name           : inactives_rdkit-444
+Program        : LigPrep
+Version        : 2022-2 build 128
+Host           : karla.sund.root.ku.dk
+Dir            : /mnt/data/dk/scratch/dk/inactives_rdkit.9
+HostEntry      : localhost
+JobHost        : karla.sund.root.ku.dk
+JobDir         : /mnt/data/dk/scratch/dk/inactives_rdkit-444.4
+JobSchrodinger : /mnt/data/dk/Schrodinger
+Commandline    : /mnt/data/dk/Schrodinger/ligprep -ma 500 -bff 16 -i 0 -s 1 -nd -nt -orig_file /mnt/data/dk/work/lit-pcba/MTORC1/inactives_rdkit.smi -orig_file_index 40757 -ismi in_inactives_rdkit-444.smi -osd inactives_rdkit-444.sdf -HOST localhost
+StartTime      : 2024-01-30-04:45:19
+--------------------------------------------------------------------------------
+guard: WARNING Unable to checkout 1 LIGPREP_MAIN v62 license(s). Error is -4: Licensed number of users already reached. Tried 3 time(s) in 30 seconds.
+guard: FATAL -4: Licensed number of users already reached.
+ERROR: ligprep3_initialize() failed
+--------------------------------------------------------------------------------
+SUBJOB: inactives_rdkit-445
+```
+I am guessing this was a general issue. Need to update the team and fix this. 
+
+I updated the team and I will need to start re-running both the LigPrep and the follow up docking job. I wonder if I will experience issues with respect to an --OVERWRITE flag, I sincerely hope not. 
+
+For now, I need a table of some sort where I can catalogue the execution of these ligprep jobs. I have moved files around to allow them to run on Tobias in addition to Karla by getting the .inp file in the identical location. I need to be able to rsync the servers to one another. Probably use cosmos or anton as well if I can. First, I need the rsync tool. 
+
+NOTE: We need to drop the `-WAIT` flag for now I think, otherwise we need to run some sort of `nohup &` process.
+NOTE: `--OVERWRITE` isn't a valid command anyway, so I think we are safe on that end, at least. 
+
+
+
 - Torsion_Strain 
 
 then 
@@ -474,4 +564,3 @@ then
  - integrate updated papermill notebook 
  - rerun data analysis 
 
- 
