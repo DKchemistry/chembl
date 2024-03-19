@@ -17,8 +17,6 @@ from matplotlib.colors import Normalize
 #  # Graphing Settings
 
 # %%
-
-
 matplotlib.rcdefaults()
 sns.set_style("darkgrid")
 plt.rcParams["figure.dpi"] = 100
@@ -40,13 +38,7 @@ file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grid
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
 
 # %% [markdown]
-# # Directory Creation/Saving
-# %%
-
-
-# %% [markdown]
 #  # Data Processing
-
 
 # %%
 def sdf_to_df(args):
@@ -307,10 +299,8 @@ def plot_histogram_dscore(df, title_suffix):
     # Show the plot
     plt.show()
 
-
 # %%
 plot_histogram_dscore(all_data, title_suffix)
-
 
 # %%
 def plot_density_strain(df, title_suffix):
@@ -333,10 +323,8 @@ def plot_density_strain(df, title_suffix):
     # Show the plot
     plt.show()
 
-
 # %%
 plot_density_strain(all_data, title_suffix)
-
 
 # %%
 def plot_histogram_strain(df, title_suffix):
@@ -487,10 +475,8 @@ def bar_plot_enrichment_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
-
 # %%
 bar_plot_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
-
 
 # %%
 def bar_plot_delta_enrichment_by_strain(data, thresholds, title_suffix):
@@ -523,10 +509,8 @@ def bar_plot_delta_enrichment_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
-
 # %%
 bar_plot_delta_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
-
 
 # %%
 def plot_enrichment_curve_by_strain(df, total_e_threshold=None, ax=None, color="blue"):
@@ -570,7 +554,6 @@ def plot_enrichment_curve_by_strain(df, total_e_threshold=None, ax=None, color="
 
     ax.legend()
 
-
 def plot_enrichment_all_thresholds(data, thresholds, title_suffix):
     # Create a single plot
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -604,7 +587,6 @@ def plot_enrichment_all_thresholds(data, thresholds, title_suffix):
 
 
 plot = plot_enrichment_all_thresholds(all_data, total_e_thresholds, title_suffix)
-
 
 # %%
 def write_enrichment_metrics(data, thresholds, title_suffix):
@@ -713,7 +695,6 @@ def plot_delta_log_aucs(data, thresholds, title_suffix):
     plt.show()
 
 # %%
-
 plot_delta_log_aucs(all_data, total_e_thresholds, title_suffix)
 
 # %%
@@ -869,8 +850,6 @@ def plot_roc_curve_inverted(data, total_e_threshold, ax, title_suffix, color="bl
         f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
     )
 
-
-
 # %%
 def plot_roc_curves_all_thresholds(data, thresholds, title_suffix):
     # Create a single plot
@@ -901,12 +880,8 @@ def plot_roc_curves_all_thresholds(data, thresholds, title_suffix):
 
     plt.show()
 
-
-
 # %%
 plot_roc_curves_all_thresholds(all_data, total_e_thresholds, title_suffix)
-
-
 
 # %%
 def bar_plot_difference_in_auc_by_strain(data, thresholds, title_suffix):
@@ -952,12 +927,8 @@ def bar_plot_difference_in_auc_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
-
-
 # %%
 bar_plot_difference_in_auc_by_strain(all_data, total_e_thresholds, title_suffix)
-
-
 
 # %%
 def write_roc_metrics(data, thresholds, title_suffix):
@@ -1015,8 +986,6 @@ def write_roc_metrics(data, thresholds, title_suffix):
     df.to_csv(f"./papermill/csv/strain_roc_metrics_{title_suffix}.csv", index=False)
     display(df)
 
-
-
 # %%
 write_roc_metrics(all_data, total_e_thresholds, title_suffix)
 
@@ -1028,8 +997,6 @@ write_roc_metrics(all_data, total_e_thresholds, title_suffix)
 data = all_data
 chosen_rank_amount = 20
 rank_thresholds = [10, 20]
-
-
 
 # %%
 def identify_pareto(scores):
@@ -1055,8 +1022,6 @@ def find_pareto_ranks(scores, max_ranks=100):
         if remaining_scores.shape[0] == 0:
             break
     return ranks
-
-
 
 # %%
 # Extract the scores for the entire dataset
@@ -1162,7 +1127,6 @@ plt.show()
 pareto_front_df = calculate_enrichment_parameters(pareto_front_df)
 
 
-
 # %%
 def enrichment_metrics(df):
     df = calculate_enrichment_parameters(df)
@@ -1183,8 +1147,6 @@ def enrichment_metrics(df):
         * 100
     )
     return ef1, ef5
-
-
 
 # %%
 def compare_enrichment_metrics_for_ranks(
@@ -1227,13 +1189,11 @@ def compare_enrichment_metrics_for_ranks(
     plt.tight_layout()
     plt.show()
 
-
+# %%
 # Usage example
 compare_enrichment_metrics_for_ranks(
     data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
 )
-
-
 
 # %%
 def bar_plot_delta_enrichment_by_pareto(
@@ -1278,13 +1238,11 @@ def bar_plot_delta_enrichment_by_pareto(
     plt.tight_layout()
     plt.show()
 
-
+# %%
 # Usage example, assuming `data`, `pareto_ranks_indices`, and `title_suffix` are defined
 bar_plot_delta_enrichment_by_pareto(
     data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
 )
-
-
 
 # %%
 def plot_enrichment_curve_by_pareto(
@@ -1335,13 +1293,10 @@ def plot_enrichment_curves_by_pareto_ranks(
     plt.tight_layout()
     plt.show()
 
-
-# Example usage
+# %%
 plot_enrichment_curves_by_pareto_ranks(
     data, pareto_ranks_indices, rank_thresholds, title_suffix
 )
-
-
 
 # %%
 def write_enrichment_metrics_pareto(
@@ -1393,11 +1348,9 @@ def write_enrichment_metrics_pareto(
     )
     display(df_to_csv)
 
-
 write_enrichment_metrics_pareto(
     data, pareto_ranks_indices, [10, 20], title_suffix=title_suffix
 )
-
 
 # %% [markdown]
 #  # Pareto Linear Log ROC AUC
@@ -1427,8 +1380,6 @@ def logauc_by_pareto(df, pareto_ranks_indices, rank_thresholds, a=1e-3):
 
     return log_auc
 
-
-
 # %%
 def plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
     # Calculate log AUC for the entire dataset
@@ -1450,11 +1401,8 @@ def plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suff
     plt.show()
 
 
-
 # %%
 plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
-
-
 
 # %%
 def plot_delta_log_aucs_pareto(
@@ -1478,12 +1426,8 @@ def plot_delta_log_aucs_pareto(
     plt.ylabel("Delta Linear Log10 AUC (x10)")
     plt.show()
 
-
-
 # %%
 plot_delta_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
-
-
 
 # %%
 def plot_semi_log_roc_pareto(
@@ -1516,8 +1460,6 @@ def plot_semi_log_roc_pareto(
     )
     ax.legend()
 
-
-
 # %%
 def plot_all_thresholds_pareto(df, pareto_ranks_indices, rank_thresholds, title_suffix):
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -1545,12 +1487,8 @@ def plot_all_thresholds_pareto(df, pareto_ranks_indices, rank_thresholds, title_
     plt.tight_layout()
     plt.show()
 
-
-
 # %%
 plot_all_thresholds_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
-
-
 
 # %%
 def write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
@@ -1587,10 +1525,8 @@ def write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suf
     display(df)
 
 
-
 # %%
 write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
-
 
 
 # %% [markdown]
@@ -1638,8 +1574,6 @@ def plot_roc_curve_inverted_pareto(
         f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
     )
 
-
-
 # %%
 def plot_all_roc_thresholds_pareto(
     df, pareto_ranks_indices, rank_thresholds, title_suffix
@@ -1677,7 +1611,6 @@ def plot_all_roc_thresholds_pareto(
     plt.show()
 
 
-
 # %%
 plot_all_roc_thresholds_pareto(
     df=data,
@@ -1685,8 +1618,6 @@ plot_all_roc_thresholds_pareto(
     rank_thresholds=rank_thresholds,
     title_suffix=title_suffix,
 )
-
-
 
 # %%
 def bar_plot_difference_in_auc_by_pareto(
@@ -1754,14 +1685,10 @@ def bar_plot_difference_in_auc_by_pareto(
     plt.legend()
     plt.show()
 
-
-
 # %%
 bar_plot_difference_in_auc_by_pareto(
     data, pareto_ranks_indices, rank_thresholds, title_suffix
 )
-
-
 
 # %%
 def write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix):
@@ -1837,7 +1764,416 @@ def write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_
     )
     display(df)
 
+# %%
+write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
+# %% [markdown]
+#  # Pareto Ranks as Scores
+# 
+#  1. Calculate Pareto ranks of an the entire dataset
+# 
+#  2. For Enrichment: Rank order by pareto rank (however that is an awkward implementation, as large sets of compounds will share a rank)
+# 
+#  3. for ROC-AUC and ROC-logAUC, pareto ranking becomes the scoring function.
+
+# %% [markdown]
+#  We need a new find_pareto_ranks() that does not have a limit on the amount of ranks.
+
+# %%
+def find_all_pareto_ranks(scores):
+    ranks = []
+    remaining_scores = scores.copy()
+    remaining_indices = np.arange(scores.shape[0])
+    while remaining_scores.shape[0] > 0:
+        pareto_indices = identify_pareto(remaining_scores)
+        ranks.append(remaining_indices[pareto_indices])
+        remaining_scores = np.delete(remaining_scores, pareto_indices, axis=0)
+        remaining_indices = np.delete(remaining_indices, pareto_indices)
+    return ranks
+
+# %%
+# %% [markdown]
+#  # Due to the length of time to calculate all the pareto fronts and their ranks, we are temporarily saving that data to file. This needs to be removed in papermill execution or we will get incorrect results.
+
+# %%
+# Extract the scores for the entire dataset
+
+scores = data[["r_i_docking_score", "Total_E"]].values
+
+# ! TEMPORARY COMMENTED OUT FOR TESTING
+total_pareto_ranks_indices = find_all_pareto_ranks(scores)
 
 
 # %%
-write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+# import pickle
+
+# ! TEMPORARY COMMENTED OUT FOR TESTING
+# ! FILE IS SAVED
+# with open('pareto_ranks.pkl', 'wb') as f:
+#   pickle.dump(total_pareto_ranks_indices, f)
+
+
+# %%
+# with open('pareto_ranks.pkl', 'rb') as f:
+#   total_pareto_ranks_indices = pickle.load(f)
+
+
+# %%
+total_pareto_ranks_indices[:][0]
+
+
+# %%
+# Count the number of Pareto points per rank and the total
+num_points_per_rank = [len(indices) for indices in total_pareto_ranks_indices]
+total_points = sum(num_points_per_rank)
+
+# Print the counts
+print("Number of Pareto points per rank:")
+for rank, count in enumerate(num_points_per_rank, start=1):
+    print(f"Rank {rank}: {count} points")
+
+print(f"\nTotal Pareto points across all ranks: {total_points}")
+
+
+# %%
+# Determine the actual number of ranks found
+num_ranks = len(total_pareto_ranks_indices)
+print(
+    f"Number of Pareto ranks found: {num_ranks}, in total containing {total_points} points, original data is {data.shape}."
+)
+
+# %%
+# Create a new figure and axes
+fig, ax = plt.subplots(figsize=(12, 10))
+
+# Normalize color gradient based on num_ranks, be careful how it is defined in the code
+norm = plt.cm.colors.Normalize(vmin=0, vmax=num_ranks - 1)
+
+# Set the title
+ax.set_title(f"All Pareto Ranks ({title_suffix})")
+
+# Use the axes for the scatter plots
+ax.scatter(
+    data["r_i_docking_score"],
+    data["Total_E"],
+    color="lightgrey",
+    label="Baseline Data",
+    alpha=0.5,
+)
+
+for i, indices in enumerate(total_pareto_ranks_indices):
+    rank_data = data.iloc[indices]
+    ax.scatter(
+        rank_data["r_i_docking_score"],
+        rank_data["Total_E"],
+        color=colormap(norm(i)),
+        label=f"Rank {i+1}",
+    )
+
+# Use the axes for the colorbar
+sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
+sm.set_array([])
+# Reduce the number of ticks on the colorbar
+cbar = fig.colorbar(sm, ax=ax, ticks=np.linspace(0, num_ranks - 1, num_ranks // 5))
+cbar.ax.set_yticklabels([f"Rank {i*5+1}" for i in range(num_ranks // 5)])
+cbar.set_label("Pareto Front Rank")
+
+plt.grid(True)
+plt.show()
+
+
+# %%
+all_pareto_indices = np.concatenate(total_pareto_ranks_indices)
+# Remember ".iloc" is indices based, even the df.index has both indices and labels
+all_pareto_front_df = data.iloc[all_pareto_indices]
+display(all_pareto_front_df.head())
+display(data.head())
+display(total_pareto_ranks_indices[:][0])
+display(all_pareto_indices[:4])
+display(all_pareto_front_df.index)
+
+
+# %%
+# display(all_pareto_front_df.loc[1].to_frame().T)
+# display(all_pareto_front_df.iloc[0].to_frame().T)
+
+# %% [markdown]
+#  `all_pareto_front_df` is in the correct "order" of pareto fronts by rank, however that is not very useful directly. as points in a front are considered "optimal". while I didn't intentionall set it: the ranks themselves are ordered by docking score **within** the rank itself. this could be useful later, so I don't want to disregard it.
+# 
+#  however, what we need right now is the ability to map `total_pareto_ranks_indices` to the `all_pareto_front_df` dataframe. `total_pareto_ranks_indices` is a list of arrays containing the pareto front points, by their rank
+
+# %%
+print(total_pareto_ranks_indices[0])
+len(total_pareto_ranks_indices)
+
+
+# %%
+for rank, indices in enumerate(total_pareto_ranks_indices):
+    print(f"Rank {rank+1}: {indices} points")
+
+
+# %% [markdown]
+#  Because of how we handled the enrichment calculations (setting index values to start at 1 and not 0), we now need a work around for using iloc. I don't really get why, but I can't get a solution other than the strange one below.
+# 
+#  iloc is indices based, **this is different than saying index based**, so iloc[0] is the first row of your dataframe. when we set our **labels** to start at 1, the index value we see as iloc[0] is 1
+# 
+#  total_pareto_rank_indices has the actual **indicies** of the dataframe, which require using iloc to access successfully, unless we want to redo the index labels. i am too worried right now that this will introduce new problems somehow, so i don't want to touch it.
+# 
+#  instead, we need to use get_loc. this is very unintuitive because you would think that get_loc (a pandas function) would return something you would use for df.loc related tasks. but no, get_loc is a method of the index class and is used to get the indice for a labeled index value in the dataframe.
+# 
+#  get_loc() here is actually returning just one number, that is whatever the column based index that ParetoRank is.
+# 
+#  also, i should have really handled my version control differently. this should have been a branch so i could have definitely kept the working completely okay code. i should have also used git tag to confirm that the code works
+
+# %%
+# Create a copy of the original dataframe, data
+df_copy = data.copy()
+
+# Create a new column 'ParetoRank' with default value NaN
+df_copy["ParetoRank"] = np.nan
+
+# Get the integer position of the 'ParetoRank' column
+pareto_rank_col_index = df_copy.columns.get_loc("ParetoRank")
+
+# Loop over each rank and its indices
+for rank, indices in enumerate(total_pareto_ranks_indices):
+    # Update 'ParetoRank' for the rows at the current indices to the current rank
+    df_copy.iloc[indices, pareto_rank_col_index] = rank + 1
+
+
+# %%
+df_copy
+
+
+# %%
+# Create a new figure and axes
+fig, ax = plt.subplots(figsize=(12, 10))
+
+# Normalize color gradient based on num_ranks, be careful how it is defined in the code
+num_ranks = df_copy["ParetoRank"].nunique()
+norm = plt.cm.colors.Normalize(vmin=0, vmax=num_ranks - 1)
+
+# Set the title
+ax.set_title(f"All Pareto Ranks ({title_suffix})")
+
+# Use the axes for the scatter plots
+ax.scatter(
+    df_copy["r_i_docking_score"],
+    df_copy["Total_E"],
+    color="lightgrey",
+    label="Baseline Data",
+    alpha=0.5,
+)
+
+for i in range(1, num_ranks + 1):
+    rank_data = df_copy[df_copy["ParetoRank"] == i]
+    ax.scatter(
+        rank_data["r_i_docking_score"],
+        rank_data["Total_E"],
+        color=colormap(norm(i - 1)),
+        label=f"Rank {i}",
+    )
+
+# Use the axes for the colorbar
+sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
+sm.set_array([])
+# Reduce the number of ticks on the colorbar
+cbar = fig.colorbar(sm, ax=ax, ticks=np.linspace(0, num_ranks - 1, num_ranks // 5))
+cbar.ax.set_yticklabels([f"Rank {i*5+1}" for i in range(num_ranks // 5)])
+cbar.set_label("Pareto Front Rank")
+
+plt.grid(True)
+plt.show()
+
+
+# %%
+print("Indices of Rank 1, Pareto Front:")
+print(total_pareto_ranks_indices[:][0])
+
+print("Updated Dataframe with Pareto Ranks:")
+display(
+    df_copy[df_copy["ParetoRank"] == 1][
+        ["Molecule_Name", "ParetoRank", "r_i_docking_score", "Total_E", "Activity"]
+    ]
+)
+
+print("Original Dataframe:")
+display(
+    data.iloc[total_pareto_ranks_indices[:][0]][
+        ["Molecule_Name", "r_i_docking_score", "Total_E", "Activity"]
+    ]
+)
+
+
+# %% [markdown]
+#  Ranks appear to be updated correctly, plot matches and data matches in df.
+
+# %% [markdown]
+#  Now we need to get enrichment metrics as well as save them to file.
+# 
+#  For Enrichment: We sort by pareto rank, but this metric doesn't really make sense in this context.
+# 
+#  For ROC, we use Rank as our score. Let's do this first.
+
+# %%
+def plot_pareto_rank_semi_log_roc(df, a=1e-3, ax=None):
+    # Baseline scores
+    y_scores_baseline = -df["r_i_docking_score"]
+    fpr_baseline, tpr_baseline, _ = roc_curve(df["Activity"], y_scores_baseline)
+    valid_indices_baseline = np.where(fpr_baseline >= a)
+    log_fpr_valid_baseline = np.log10(fpr_baseline[valid_indices_baseline])
+    log_auc_baseline = (
+        auc(log_fpr_valid_baseline, tpr_baseline[valid_indices_baseline]) / -np.log10(a)
+    ) * 10
+    ax.plot(
+        log_fpr_valid_baseline,
+        tpr_baseline[valid_indices_baseline],
+        label=f"r_i_docking_score LogAUC (x10): {log_auc_baseline:.2f}",
+        color="red",
+    )
+
+    # New scores
+    y_scores_new = df["ParetoRank"]
+    fpr_new, tpr_new, _ = roc_curve(df["Activity"], y_scores_new)
+    valid_indices_new = np.where(fpr_new >= a)
+    log_fpr_valid_new = np.log10(fpr_new[valid_indices_new])
+    log_auc_new = (
+        auc(log_fpr_valid_new, tpr_new[valid_indices_new]) / -np.log10(a)
+    ) * 10
+    ax.plot(
+        log_fpr_valid_new,
+        tpr_new[valid_indices_new],
+        label=f"ParetoRank LogAUC (x10): {log_auc_new:.2f}",
+        color="blue",
+    )
+
+    deltaLogAUC = log_auc_new - log_auc_baseline
+    print(f"Delta LogAUC (x10): {deltaLogAUC:.2f}")
+
+    ax.legend()
+    ax.set_title(
+        f"SemiLogX ROC Curve Comparison for r_i_docking_score and ParetoRank ({title_suffix})"
+    )
+
+
+fig, ax = plt.subplots(figsize=(12, 10))
+plot_pareto_rank_semi_log_roc(df_copy, a=1e-3, ax=ax)
+plt.show()
+
+
+
+# %%
+def plot_pareto_rank_roc(df, ax=None):
+    # Baseline scores
+    y_scores_baseline = -df["r_i_docking_score"]
+    fpr_baseline, tpr_baseline, _ = roc_curve(df["Activity"], y_scores_baseline)
+    roc_auc_baseline = auc(fpr_baseline, tpr_baseline)
+    ax.plot(
+        fpr_baseline,
+        tpr_baseline,
+        label=f"r_i_docking_score ROC AUC: {roc_auc_baseline:.2f}",
+        color="red",
+    )
+
+    # New scores
+    y_scores_new = df["ParetoRank"]
+    fpr_new, tpr_new, _ = roc_curve(df["Activity"], y_scores_new)
+    roc_auc_new = auc(fpr_new, tpr_new)
+    ax.plot(
+        fpr_new,
+        tpr_new,
+        label=f"ParetoRank ROC AUC: {roc_auc_new:.2f}",
+        color="blue",
+    )
+
+    deltaROC = roc_auc_new - roc_auc_baseline
+    print(f"Delta ROC: {deltaROC:.2f}")
+
+    ax.legend()
+    ax.set_title(f"ROC Curve Comparison for r_i_docking_score and ParetoRank")
+
+
+fig, ax = plt.subplots(figsize=(12, 10))
+plot_pareto_rank_roc(df_copy, ax=ax)
+plt.show()
+
+
+# %%
+def write_pareto_rank_metrics(df, a=1e-3, title_suffix=title_suffix):
+    # initalize a dataframe to store pareto ranking metrics
+    pareto_ranking_metrics = pd.DataFrame(
+        columns=[
+            "Protein",
+            "Strain Energy Cutoff",
+            "ROC_AUC",
+            "Linear Log10 AUC (x10)",
+            "deltaAUC",
+            "Delta Linear Log10 AUC (x10)",
+        ]
+    )
+
+    y_scores_baseline_log = -df["r_i_docking_score"]
+
+    fpr_baseline_log, tpr_baseline_log, _ = roc_curve(df["Activity"], y_scores_baseline_log)
+    
+    valid_indices_baseline_log = np.where(fpr_baseline_log >= a)
+    
+    log_fpr_valid_baseline_log = np.log10(fpr_baseline_log[valid_indices_baseline_log])
+    
+    log_auc_baseline = (
+        auc(log_fpr_valid_baseline_log, tpr_baseline_log[valid_indices_baseline_log]) / -np.log10(a)
+    ) * 10
+
+    # New scores
+    y_scores_new_log = df["ParetoRank"]
+    
+    fpr_new_log, tpr_new_log, _ = roc_curve(df["Activity"], y_scores_new_log)
+    
+    valid_indices_new_log = np.where(fpr_new_log >= a)
+    
+    log_fpr_valid_new = np.log10(fpr_new_log[valid_indices_new_log])
+    
+    log_auc_new = (
+        auc(log_fpr_valid_new, tpr_new_log[valid_indices_new_log]) / -np.log10(a)
+    ) * 10
+
+    deltaLogAUC = log_auc_new - log_auc_baseline
+
+    # Baseline scores
+    y_scores_baseline = -df["r_i_docking_score"]
+    fpr_baseline, tpr_baseline, _ = roc_curve(df["Activity"], y_scores_baseline)
+    roc_auc_baseline = auc(fpr_baseline, tpr_baseline)
+
+    # New scores
+    y_scores_new = df["ParetoRank"]
+    fpr_new, tpr_new, _ = roc_curve(df["Activity"], y_scores_new)
+    roc_auc_new = auc(fpr_new, tpr_new)
+
+    deltaROC = roc_auc_new - roc_auc_baseline
+
+    # Assign values to the dataframe
+    new_row = {
+        "Protein": title_suffix,
+        "Strain Energy Cutoff": "ParetoRank",
+        "ROC_AUC": roc_auc_new,
+        "Linear Log10 AUC (x10)": log_auc_new,
+        "deltaAUC": deltaROC,
+        "Delta Linear Log10 AUC (x10)": deltaLogAUC,
+    }
+
+    pareto_ranking_metrics = pd.concat([pareto_ranking_metrics, pd.DataFrame([new_row])], ignore_index=True)
+
+    pareto_ranking_metrics.to_csv(
+        f"./papermill/ParetoRankCSV/ParetoRanking_metrics_{title_suffix}.csv", index=False
+    )
+
+
+    return pareto_ranking_metrics
+
+write_pareto_rank_metrics(df_copy)
+
+# %%
+pareto_ranking_metrics = write_pareto_rank_metrics(df_copy)
+display(pareto_ranking_metrics)
+
+# %%
