@@ -551,7 +551,7 @@ For now, I need a table of some sort where I can catalogue the execution of thes
 NOTE: We need to drop the `-WAIT` flag for now I think, otherwise we need to run some sort of `nohup &` process.
 NOTE: `--OVERWRITE` isn't a valid command anyway, so I think we are safe on that end, at least. 
 
-
+Some jobs ran just fine it seems, though it is worthwhile to double check. I am getting a local rsync copy of `lit-pcba/` from tobias. I'll analyze it locally. My rsync server script is not good, but the local one is and I can work locally much faster, so I rather do it all here and push to the servers. 
 
 - Torsion_Strain 
 
