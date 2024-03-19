@@ -464,6 +464,8 @@ Testing the final section, "Pareto Ranks as Scores". This calculation will take 
 
 - `glide_sort`
 
+See: `grids_lit-pcba/glide_sort_writer.py`
+
 - - NOTE: Naming convention changed for the output files. I am simply replacing `.sdfgz` for `.sdf` between input and output, I forgot to add the `_sorted` prefix I originally planned for. This is fine just be aware of it.
 - - NOTE: While some files (e.g. ADRB2) have quite a large amount of inactives (>100K), other targets are *considerably* smaller. See this example: 
 
@@ -551,16 +553,106 @@ For now, I need a table of some sort where I can catalogue the execution of thes
 NOTE: We need to drop the `-WAIT` flag for now I think, otherwise we need to run some sort of `nohup &` process.
 NOTE: `--OVERWRITE` isn't a valid command anyway, so I think we are safe on that end, at least. 
 
-Some jobs ran just fine it seems, though it is worthwhile to double check. I am getting a local rsync copy of `lit-pcba/` from tobias. I'll analyze it locally. My rsync server script is not good, but the local one is and I can work locally much faster, so I rather do it all here and push to the servers. 
+Some jobs ran just fine it seems, though it is worthwhile to double check. I am getting a local rsync copy of `lit-pcba/` from tobias. I'll analyze it locally. My rsync server script is not good, but the local one is and I can work locally much faster, so I rather do it all here and push to the servers.
+
+I am going to rsync from Karla as well, it should be the most updated files. 
+
+Surprising result from Karla, might just be because I am rerunning MTORC, but either way: 
+
+```
+rsync -avhz "karla:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+Proceed with the transfer? (y/n): y
+receiving file list ... done
+GBA/
+MTORC1/
+MTORC1/inactives_rdkit-dropped-indices.txt
+MTORC1/inactives_rdkit-dropped.smi
+MTORC1/inactives_rdkit.log
+MTORC1/inactives_rdkit.sdf
+
+sent 11.89K bytes  received 6.42M bytes  858.24K bytes/sec
+total size is 7.34G  speedup is 1140.84
+```
+Time to start the review...
+
+| Protein  | PDB_ID | wc -l .smi | sdf.log | fails | rerun |
+|----------|--------|------------|---------|-------|-------|
+| ADRB2    | 4lde   | 483277     | 110621  | yes   | tbd   |
+| ALDH1    | 5l2m   | 228327     | 53846   | yes   | tbd   |
+| ESR1ago  | 2qzo   | 8341       | 2146    | yes   | tbd   |
+| ESR1ant  | 2iog   | 7452       | 1852    | yes   | tbd   |
+| FEN1     | 5fv7   | 558263     | 106725  | yes   | tbd   |
+| GBA      | 2v3d   | 475989     | 475980  | no    | no    | * no inactives_rdkit.log
+| IDH1     | 4umx   | 566613     | 106712  | yes   | tbd   |
+| KAT2A    | 5mlj   | 540568     | 132219  | yes   | tbd   |
+| MAPK1    | 4zzn   | 111544     | 23063   | yes   | tbd   |
+| MTORC1   | 4dri   | 41057      | 8003    | yes   | tbd   |
+| OPRK1    | 6b73   | 419268     | 92267   | yes   | tbd   |
+| PKM2     | 3gr4   | 383472     | 110511  | yes   | tbd   |
+| PPARG    | 3b1m   | 7751       | 1709    | yes   | tbd   |
+| TP53     | 3zme   | 6035       | 1609    | yes   | tbd   |
+| VDR      | 3a2j   | 567631     | 107269  | yes   | tbd   |
+
+*GBA is likely fine, I think the lack of log was because it was a system I was testing with in another dir and then cp or mv the relevant SDF files over.
+
+Well, unfortunately, this means re-running most of these through both LigPrep and Glide Docking. To save time, need to put split.seperate them by server to get as many parallel CPU jobs as possible. 
+
+
+| Protein  | PDB_ID | wc -l .smi | sdf.log | fails | rerun |
+|----------|--------|------------|---------|-------|-------|
+| ADRB2    | 4lde   | 483277     | 110621  | yes   | *KAR*   |
+| ALDH1    | 5l2m   | 228327     | 53846   | yes   | *COS*   |
+| ESR1ago  | 2qzo   | 8341       | 2146    | yes   | *ANT*   |
+| ESR1ant  | 2iog   | 7452       | 1852    | yes   | tbd   |
+| FEN1     | 5fv7   | 558263     | 106725  | yes   | tbd   |
+| GBA      | 2v3d   | 475989     | 475980  | no    | no    | * no inactives_rdkit.log
+| IDH1     | 4umx   | 566613     | 106712  | yes   | tbd   |
+| KAT2A    | 5mlj   | 540568     | 132219  | yes   | tbd   |
+| MAPK1    | 4zzn   | 111544     | 23063   | yes   | tbd   |
+| MTORC1   | 4dri   | 41057      | 8003    | yes   | *TOB*   |
+| OPRK1    | 6b73   | 419268     | 92267   | yes   | tbd   |
+| PKM2     | 3gr4   | 383472     | 110511  | yes   | tbd   |
+| PPARG    | 3b1m   | 7751       | 1709    | yes   | tbd   |
+| TP53     | 3zme   | 6035       | 1609    | yes   | tbd   |
+| VDR      | 3a2j   | 567631     | 107269  | yes   | tbd   |
+
+### Karla: 
+
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ADRB2/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -JOBNAME ADRB2_inactives_rdkit_ligprep
+JobId: karla-0-65f9da6b
+```
+
+### Cosmos:
+
+```sh
+ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ALDH1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME ALDH1_inactives_rdkit_ligprep
+JobId: cosmos-0-65f9e622
+```
+
+### Tobias:
+
+MTORC job
+
+### Anton:
+
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ESR1_ago/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 80 -JOBNAME ESR1_ago_inactives_rdkit_ligprep
+JobId: anton-0-65f9f0e6
+```
+Note: some weirdness in how the path is handled for ligprep, needs the $SCHRODINGER
+
+- NOTE: There is a chance the active ligands failed as well. I should should check those, hopefully since they are small it should be fine.
+
 
 - Torsion_Strain 
 
 then 
 
- - merge/concat data pipeline for analysis 
+- merge/concat data pipeline for analysis 
 
- # # GPCR Bench 
+## GPCR Bench 
 
- - integrate updated papermill notebook 
- - rerun data analysis 
+- integrate updated papermill notebook 
+- rerun data analysis 
 
