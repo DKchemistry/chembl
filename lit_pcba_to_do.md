@@ -455,3 +455,23 @@ In the future, I should consider some sort of 'don't save' parameter for the met
 I replicated the GPCR_bench-master/ directory structure for grids_lit-pcba, so that I could save my files in a similar way, rather than refactoring the entire saving logic to instead using some sort of "directory" variable as that set up is very tedious. 
 
 I am now hopefully able to progress through the rest of the interactive python file, once that is complete, I can return to parallel execution of the sort/strain calculations with my prior logic. I am a little worried about memory allocation when running the strain calculations.
+
+# Strain Metrics Intermission
+
+Testing the final section, "Pareto Ranks as Scores". This calculation will take awhile, so we can focus on other tasks we need to complete right now: 
+
+# # LIT PCBA 
+
+- `glide_sort` 
+- Torsion_Strain 
+
+then 
+
+ - merge/concat data pipeline for analysis 
+
+ # # GPCR Bench 
+
+ - integrate updated papermill notebook 
+ - rerun data analysis 
+
+ 
