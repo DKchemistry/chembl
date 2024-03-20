@@ -600,20 +600,20 @@ Well, unfortunately, this means re-running most of these through both LigPrep an
 
 | Protein  | PDB_ID | wc -l .smi | sdf.log | fails | rerun |
 |----------|--------|------------|---------|-------|-------|
-| ADRB2    | 4lde   | 483277     | 110621  | yes   | *KAR*   |
-| ALDH1    | 5l2m   | 228327     | 53846   | yes   | *COS*   |
-| ESR1ago  | 2qzo   | 8341       | 2146    | yes   | *ANT*   |
-| ESR1ant  | 2iog   | 7452       | 1852    | yes   | tbd   |
-| FEN1     | 5fv7   | 558263     | 106725  | yes   | tbd   |
+| ADRB2    | 4lde   | 483277     | 110621  | yes   | *KAR - DONE*   |
+| ALDH1    | 5l2m   | 228327     | 53846   | yes   | *COS - DONE*   |
+| ESR1ago  | 2qzo   | 8341       | 2146    | yes   | *ANT - DONE*   |
+| ESR1ant  | 2iog   | 7452       | 1852    | yes   | *ANT - DONE*   |
+| FEN1     | 5fv7   | 558263     | 106725  | yes   | *KAR - DONE*   |
 | GBA      | 2v3d   | 475989     | 475980  | no    | no    | * no inactives_rdkit.log
-| IDH1     | 4umx   | 566613     | 106712  | yes   | tbd   |
-| KAT2A    | 5mlj   | 540568     | 132219  | yes   | tbd   |
-| MAPK1    | 4zzn   | 111544     | 23063   | yes   | tbd   |
-| MTORC1   | 4dri   | 41057      | 8003    | yes   | *TOB*   |
+| IDH1     | 4umx   | 566613     | 106712  | yes   | *COS*   |
+| KAT2A    | 5mlj   | 540568     | 132219  | yes   | *KAR*   |
+| MAPK1    | 4zzn   | 111544     | 23063   | yes   | *ANT*   |
+| MTORC1   | 4dri   | 41057      | 8003    | yes   | *KAR - DONE*   |
 | OPRK1    | 6b73   | 419268     | 92267   | yes   | tbd   |
 | PKM2     | 3gr4   | 383472     | 110511  | yes   | tbd   |
-| PPARG    | 3b1m   | 7751       | 1709    | yes   | tbd   |
-| TP53     | 3zme   | 6035       | 1609    | yes   | tbd   |
+| PPARG    | 3b1m   | 7751       | 1709    | yes   | *ANT - DONE*   |
+| TP53     | 3zme   | 6035       | 1609    | yes   | *ANT - DONE*   |
 | VDR      | 3a2j   | 567631     | 107269  | yes   | tbd   |
 
 ### Karla: 
@@ -623,16 +623,34 @@ Well, unfortunately, this means re-running most of these through both LigPrep an
 JobId: karla-0-65f9da6b
 ```
 
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/FEN1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:125 -NJOBS 450 -JOBNAME FEN1_inactives_rdkit_ligprep
+```
+
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/KAT2A/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -JOBNAME KAT2A_inactives_rdkit_ligprep
+JobId: karla-0-65fa269a
+```
+
 ### Cosmos:
 
 ```sh
 ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ALDH1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME ALDH1_inactives_rdkit_ligprep
 JobId: cosmos-0-65f9e622
 ```
+the job just literally disappeared, had to rerun it. if it just disappears again, we're moving on from running on cosmos. 
+re-run worked, weird 
+
+```sh
+ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/IDH1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME IDH1_inactives_rdkit_ligprep
+JobId: cosmos-0-65fa0ac8
+```
 
 ### Tobias:
 
-MTORC job
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/MTORC1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -JOBNAME MTORC1_inactives_rdkit_ligprep
+```
 
 ### Anton:
 
@@ -641,6 +659,24 @@ $SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt
 JobId: anton-0-65f9f0e6
 ```
 Note: some weirdness in how the path is handled for ligprep, needs the $SCHRODINGER
+
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ESR1_ant/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 80 -JOBNAME ESR1_ant_inactives_rdkit_ligprep
+```
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/PPARG/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 160  -JOBNAME PPARG_inactives_rdkit_ligprep
+JobId: anton-0-65fa0c2a
+```
+
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/TP53/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 160 -JOBNAME TP53_inactives_rdkit_ligprep
+JobId: anton-0-65fa0cb9
+```
+
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/MAPK1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 160 -JOBNAME MAPK1_inactives_rdkit_ligprep
+JobId: anton-0-65fa27a8
+```
 
 - NOTE: There is a chance the active ligands failed as well. I should should check those, hopefully since they are small it should be fine.
 
