@@ -606,15 +606,15 @@ Well, unfortunately, this means re-running most of these through both LigPrep an
 | ESR1ant  | 2iog   | 7452       | 1852    | yes   | *ANT - DONE*   |
 | FEN1     | 5fv7   | 558263     | 106725  | yes   | *KAR - DONE*   |
 | GBA      | 2v3d   | 475989     | 475980  | no    | no    | * no inactives_rdkit.log
-| IDH1     | 4umx   | 566613     | 106712  | yes   | *COS*   |
-| KAT2A    | 5mlj   | 540568     | 132219  | yes   | *KAR*   |
-| MAPK1    | 4zzn   | 111544     | 23063   | yes   | *ANT*   |
+| IDH1     | 4umx   | 566613     | 106712  | yes   | *COS - DONE*   |
+| KAT2A    | 5mlj   | 540568     | 132219  | yes   | *KAR - DONE*   |
+| MAPK1    | 4zzn   | 111544     | 23063   | yes   | *ANT - DONE*   |
 | MTORC1   | 4dri   | 41057      | 8003    | yes   | *KAR - DONE*   |
-| OPRK1    | 6b73   | 419268     | 92267   | yes   | tbd   |
-| PKM2     | 3gr4   | 383472     | 110511  | yes   | tbd   |
+| OPRK1    | 6b73   | 419268     | 92267   | yes   | *COS - DONE*   |
+| PKM2     | 3gr4   | 383472     | 110511  | yes   | *ANT - DONE*   |
 | PPARG    | 3b1m   | 7751       | 1709    | yes   | *ANT - DONE*   |
 | TP53     | 3zme   | 6035       | 1609    | yes   | *ANT - DONE*   |
-| VDR      | 3a2j   | 567631     | 107269  | yes   | tbd   |
+| VDR      | 3a2j   | 567631     | 107269  | yes   | *KAR - DONE*   |
 
 ### Karla: 
 
@@ -632,18 +632,26 @@ JobId: karla-0-65f9da6b
 JobId: karla-0-65fa269a
 ```
 
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/VDR/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -JOBNAME VDR_inactives_rdkit_ligprep
+JobId: karla-0-65fa42bb
+```
+
 ### Cosmos:
 
 ```sh
 ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/ALDH1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME ALDH1_inactives_rdkit_ligprep
 JobId: cosmos-0-65f9e622
 ```
-the job just literally disappeared, had to rerun it. if it just disappears again, we're moving on from running on cosmos. 
-re-run worked, weird 
 
 ```sh
 ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/IDH1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME IDH1_inactives_rdkit_ligprep
 JobId: cosmos-0-65fa0ac8
+```
+
+```sh
+ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/OPRK1/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:100 -NJOBS 450 -JOBNAME OPRK1_inactives_rdkit_ligprep
+JobId: cosmos-0-65fa3f73
 ```
 
 ### Tobias:
@@ -678,7 +686,22 @@ $SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt
 JobId: anton-0-65fa27a8
 ```
 
-- NOTE: There is a chance the active ligands failed as well. I should should check those, hopefully since they are small it should be fine.
+```sh
+$SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/PKM2/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 160 -JOBNAME PKM2_inactives_rdkit_ligprep
+JobId: anton-0-65fa3e32
+```
+
+- All inactives have re-run, need to rsync the servers. Probably best to sync everything local, make sure the structure is good, and then sync back to server. 
+
+```sh
+rsync -avhuzt "karla:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "cosmos:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "anton:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "tobias:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+```
+- NOTE: I need to think about updating the rsync script I use because it doesn't do 'u' and 't' options as is. Those options allow for the *most* up to date file to be perserved, which is how I thought rsync worked natively - but it does not. The issue for me is that I might find more footguns I don't expect. However, the basic logic for syncing in this way is probably beneficial. The strong caveat is that you should really be syncing in an intermediate location to confirm that everything is syncing as desired, which thankfully I did here. I also want a --progress option. In general, the CLI version of the script could be really improved. I'd really like to work on this when more critical work is done.
+
+- **NOTE: There is a chance the active ligands failed as well. I should should check those, hopefully since they are small it should be fine.**
 
 
 - Torsion_Strain 
