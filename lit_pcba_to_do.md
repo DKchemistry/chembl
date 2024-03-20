@@ -460,7 +460,7 @@ I am now hopefully able to progress through the rest of the interactive python f
 
 Testing the final section, "Pareto Ranks as Scores". This calculation will take awhile, so we can focus on other tasks we need to complete right now: 
 
-# # LIT PCBA 
+## LIT PCBA 
 
 - `glide_sort`
 
@@ -690,6 +690,8 @@ JobId: anton-0-65fa27a8
 $SCHRODINGER/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/PKM2/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:80 -NJOBS 160 -JOBNAME PKM2_inactives_rdkit_ligprep
 JobId: anton-0-65fa3e32
 ```
+#### Quality Control 
+
 
 - All inactives have re-run, need to rsync the servers. Probably best to sync everything local, make sure the structure is good, and then sync back to server. 
 
@@ -703,6 +705,159 @@ rsync -avhuzt "tobias:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcb
 
 - **NOTE: There is a chance the active ligands failed as well. I should should check those, hopefully since they are small it should be fine.**
 
+In terms of quickly getting results across my files, remember that I have tools like fd, rg, and so on locally. For instance I can do this: 
+
+```sh
+fd -e sdf | xargs rg '\$\$\$\$' -c | sort
+```
+
+to get something like: 
+
+```sh
+ADRB2/actives_rdkit_ligprep.sdf:34
+ADRB2/inactives_rdkit.sdf:483268
+
+ALDH1/actives_rdkit_ligprep.sdf:11545
+ALDH1/inactives_rdkit.sdf:228324
+
+ESR1ago/actives_rdkit_ligprep.sdf:15
+ESR1ago/inactives_rdkit.sdf:8340
+
+ESR1ant/actives_rdkit_ligprep.sdf:135
+ESR1ant/inactives_rdkit.sdf:7451
+
+FEN1/actives_rdkit_ligprep.sdf:650
+FEN1/inactives_rdkit.sdf:558254
+
+GBA/actives_rdkit.sdf:221
+#GBA/actives_rdkit_ligprep.sdf:221
+GBA/inactives_rdkit.sdf:475980
+#GBA/inactives_rdkit_ligprep.sdf:475980
+
+IDH1/actives_rdkit_ligprep.sdf:61
+IDH1/inactives_rdkit.sdf:566604
+
+KAT2A/actives_rdkit_ligprep.sdf:292
+KAT2A/inactives_rdkit.sdf:540559
+
+MAPK1/actives_rdkit_ligprep.sdf:403
+MAPK1/inactives_rdkit.sdf:111535
+
+MTORC1/actives_rdkit_ligprep.sdf:131
+MTORC1/inactives_rdkit.sdf:41056
+
+OPRK1/actives_rdkit_ligprep.sdf:32
+OPRK1/inactives_rdkit.sdf:419259
+
+PKM2/actives_rdkit_ligprep.sdf:635
+PKM2/inactives_rdkit.sdf:383463
+
+PPARG/actives_rdkit_ligprep.sdf:34
+PPARG/inactives_rdkit.sdf:7750
+
+TP53/actives_rdkit_ligprep.sdf:153
+TP53/inactives_rdkit.sdf:6034
+
+VDR/actives_rdkit_ligprep.sdf:1442
+VDR/inactives_rdkit.sdf:567622
+```
+- Looks good in terms of inactives 
+- Now to check the actives 
+
+```sh
+$ fd --glob actives_rdkit.smi
+ADRB2/actives_rdkit.smi
+ALDH1/actives_rdkit.smi
+ESR1ago/actives_rdkit.smi
+ESR1ant/actives_rdkit.smi
+FEN1/actives_rdkit.smi
+GBA/actives_rdkit.smi
+IDH1/actives_rdkit.smi
+KAT2A/actives_rdkit.smi
+MAPK1/actives_rdkit.smi
+MTORC1/actives_rdkit.smi
+OPRK1/actives_rdkit.smi
+PKM2/actives_rdkit.smi
+PPARG/actives_rdkit.smi
+TP53/actives_rdkit.smi
+VDR/actives_rdkit.smi
+```
+
+That's 15, good. 
+
+Whare are their `.smi` line counts? 
+
+```sh
+fd --glob 'actives_rdkit.smi' | xargs wc -l
+```
+
+```sh
+35 ADRB2/actives_rdkit.smi
+   11546 ALDH1/actives_rdkit.smi
+      16 ESR1ago/actives_rdkit.smi
+     136 ESR1ant/actives_rdkit.smi
+     651 FEN1/actives_rdkit.smi
+     222 GBA/actives_rdkit.smi
+      62 IDH1/actives_rdkit.smi
+     293 KAT2A/actives_rdkit.smi
+     404 MAPK1/actives_rdkit.smi
+     132 MTORC1/actives_rdkit.smi
+      33 OPRK1/actives_rdkit.smi
+     636 PKM2/actives_rdkit.smi
+      35 PPARG/actives_rdkit.smi
+     154 TP53/actives_rdkit.smi
+    1443 VDR/actives_rdkit.smi
+   15798 total
+```
+
+And what do their logs look like?
+
+```sh
+fd --glob "actives_rdkit_ligprep.log" | xargs grep "# of processed structures in "actives_rdkit_ligprep.sdf""
+```
+
+```sh
+ADRB2/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 34
+ALDH1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 11545
+ESR1ago/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 15
+ESR1ant/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 135
+FEN1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 650
+GBA/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 221
+IDH1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 61
+KAT2A/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 292
+MAPK1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 403
+MTORC1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 131
+OPRK1/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 32
+PKM2/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 635
+PPARG/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 34
+TP53/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 153
+VDR/actives_rdkit_ligprep.log:# of processed structures in "actives_rdkit_ligprep.sdf" : 1442
+```
+It looks like we are all good here. It might be worth to check for "fail"? But its unlikely add much. 
+
+```sh
+fd --glob "inactives_rdkit.log" | xargs rg "job\(s\)"
+```
+```sh
+ESR1ago/inactives_rdkit.log:80 of 80 job(s) succeeded; 0 job(s) failed.
+TP53/inactives_rdkit.log:159 of 159 job(s) succeeded; 0 job(s) failed.
+ESR1ant/inactives_rdkit.log:80 of 80 job(s) succeeded; 0 job(s) failed.
+PPARG/inactives_rdkit.log:159 of 159 job(s) succeeded; 0 job(s) failed.
+MTORC1/inactives_rdkit.log:447 of 447 job(s) succeeded; 0 job(s) failed.
+MAPK1/inactives_rdkit.log:160 of 160 job(s) succeeded; 0 job(s) failed.
+ALDH1/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+PKM2/inactives_rdkit.log:160 of 160 job(s) succeeded; 0 job(s) failed.
+OPRK1/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+ADRB2/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+IDH1/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+VDR/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+KAT2A/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+FEN1/inactives_rdkit.log:450 of 450 job(s) succeeded; 0 job(s) failed.
+```
+
+For the `actives_rdkit_ligprep.log` files, they were always run with `-NJOBS 1` so they don't have an option to fail a single job, just comparing the amount of processed structures, which I have already done. 
+
+It looks like we are good to go. 
 
 - Torsion_Strain 
 
