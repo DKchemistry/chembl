@@ -27,35 +27,38 @@ protein_pdbid_dict
 # %%
 file_id = []
 for key, value in protein_pdbid_dict.items():
-    file_id.append(f"{key}" + "_" + f"{value}")
+    file_id.append(f"{key}" + "-" + f"{value}")
 
 print(file_id)
 
 # %%
-sdfgz_files = []
+sdf_files = []
 
 for dirpath, dirnames, filenames in os.walk("."):
     for filename in filenames:
-        if any(id in filename for id in file_id) and filename.endswith(".sdfgz"):
-            sdfgz_file_path = os.path.abspath(os.path.join(dirpath, filename))
-            sdfgz_files.append(sdfgz_file_path)
+        if any(id in filename for id in file_id) and filename.endswith(".sdf"):
+            sdf_file_path = os.path.abspath(os.path.join(dirpath, filename))
+            sdf_files.append(sdf_file_path)
 
-print(sdfgz_files)
+print(sdf_files)
 # %%
-output_sdf_files = []
+output_csv_files = []
 
-for file in sdfgz_files:
-    sdf_file = file.replace(".sdfgz", ".sdf")
-    output_sdf_files.append(sdf_file)
+for file in sdf_files:
+    dir_name = os.path.dirname(file)  # Get the directory name
+    base_name = os.path.basename(file)  # Get the base name
+    new_dir_name = os.path.join(dir_name, 'strain')  # Add 'strain' to the directory
+    csv_file = os.path.join(new_dir_name, base_name.replace(".sdf", ".csv"))  # Replace '.sdf' with '.csv' in the base name
+    output_csv_files.append(csv_file)
 
-print(output_sdf_files)
+print(output_csv_files)
 # %%
-print(sdfgz_files[0], output_sdf_files[0])
+print(sdf_files[0], output_csv_files[0])
 # %%
 
 # convert the sdfgz_files list and output_sdf_files list to a dictionary
-sdfgz_sdf_dict = dict(zip(sdfgz_files, output_sdf_files))
-print(sdfgz_sdf_dict)
+sdf_csv_dict = dict(zip(sdf_files, output_csv_files))
+print(sdf_csv_dict)
 # %% [markdown]
 # # Previously successful command:
 # ```sh
@@ -101,18 +104,18 @@ process = subprocess.Popen(
     text=True,
 )
 # pass the commands to the subprocess stdin via communicate, the passing to stdin is implicit, you can't set communicate(stdin=commands_string).
-stdout, stderr = process.communicate(commands_string)
+# stdout, stderr = process.communicate(commands_string)
 
-# print the output
-print(stdout)
-if stderr:
-    print(f"Errors:\n{stderr}")
+# # print the output
+# print(stdout)
+# if stderr:
+#     print(f"Errors:\n{stderr}")
 
-# Save stdout and stderr to a file
-with open('glide_sort_writer_output.txt', 'w') as f:
-    f.write("STDOUT:\n")
-    f.write(stdout)
-    if stderr:
-        f.write("\nSTDERR:\n")
-        f.write(stderr)
-# %%
+# # Save stdout and stderr to a file
+# with open('glide_sort_writer_output.txt', 'w') as f:
+#     f.write("STDOUT:\n")
+#     f.write(stdout)
+#     if stderr:
+#         f.write("\nSTDERR:\n")
+#         f.write(stderr)
+# # %%
