@@ -42,10 +42,21 @@ for dirpath, dirnames, filenames in os.walk("."):
 
 print(sdfgz_files)
 # %%
+
+def replace_nth(s, old_seperator, new_seperator, n):
+    # split string into parts by `old_seperator`, this will be `_`. 
+    # We plan to replace the `old_seperator` at position `n`, which is `5`.
+    # We want to put in the `new_seperator` which is `-`.
+    # We join the parts back together with the `new_seperator` in the middle.
+    parts = s.split(old_seperator)
+    return old_seperator.join(parts[:n]) + new_seperator + old_seperator.join(parts[n:])
+
+
 output_sdf_files = []
 
 for file in sdfgz_files:
-    sdf_file = file.replace(".sdfgz", ".sdf")
+    sdf_file = file.replace(".sdfgz", "_sorted.sdf")
+    sdf_file = replace_nth(sdf_file, "_", "-", 5)
     output_sdf_files.append(sdf_file)
 
 print(output_sdf_files)
