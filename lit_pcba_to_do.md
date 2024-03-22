@@ -913,14 +913,14 @@ No, you have to be in the actual directory because the pathing to the inp file i
 | FEN1     | 5fv7   | 558263     | *KAR - RUNNING*   |
 | GBA      | 2v3d   | 475989     | no      | * no inactives_rdkit.log
 | IDH1     | 4umx   | 566613     | *COS - RUNNING*   |
-| KAT2A    | 5mlj   | 540568     | *KAR*   |
+| KAT2A    | 5mlj   | 540568     | *KAR - RUNNING*   |
 | MAPK1    | 4zzn   | 111544     | *COS - RUNNING*   |
 | MTORC1   | 4dri   | 41057      | *ANT - RUNNING*   |
 | OPRK1    | 6b73   | 419268     | *COS - RUNNING*   |
 | PKM2     | 3gr4   | 383472     | *ANT - RUNNING*   |
 | PPARG    | 3b1m   | 7751       | *ANT - RUNNING*   |
 | TP53     | 3zme   | 6035       | *ANT - RUNNING*   |
-| VDR      | 3a2j   | 567631     | *KAR*   |
+| VDR      | 3a2j   | 567631     | *KAR - RUNNING*   |
 
 Anton doesn't have the grids_lit_pcba directory, running rsync.
 
@@ -928,6 +928,7 @@ Anton can run the smaller jobs and have Karla/Cosmos run the larger ones. Still,
 
 In the meanwhile, we could handle the GPCR-Bench updates and the change we'll need for Pareto ranks on scale (either skipping it temporarily or optimizing it)
 
+Well, EXTREMELY UNFORTUNATELY, anton seems to have died. I either run all those jobs elsewhere, or wait for the server. I updated the lab. 
 
 - Torsion_Strain 
 
@@ -1000,3 +1001,95 @@ cut -d',' -f2 combined_data.csv | head -n 13 | tail -n +2
 So, we should be able to use this file with the LIT PCBA data as well, as we are unlikely to do the Pareto scores approach. 
 
 Now, we need to recall how the summary statistics are generally found. 
+
+For this, we can run `/v2_GPCR-Bench-master/papermill/combined_data_analysis.ipynb`
+
+This file does *not* do 'pareto as scores' as I think we are moving on from that (I'll check with Francesco). 
+
+This should be a sufficient workflow for LIT PCBA data withone (pretty large) exception. The LIT-PCBA data has an extra underscore tying the `PROTEIN` to the `PDB-ID`. We either need to change how we parse the data itself or we convert that `_` to another character, maybe `-`. This will need to be done on the output stage of the initial csv generation (e.g. the papermill execution), or some sort of `mv` command. Not sure which is best. The extra `mv` command introduces a source of forgetfulness, a refactor is more responsible but will require some sort of in place replace of `title_suffix`. I think that's actually the smartest approach, as it will be operable with the GPCR data (there is no `_` that would convert out). However, the issue is actually earlier, as populating the papermill notebooks will have to be refactored. I think the change will have to be there, because ultimately the `title_suffix` can be replaced via it's very initalization, this will make more sense when I look at the code. I should do that next, as the docking jobs are still running. Maybe I can pull down an rsync version of one server and start to do demo runs. All of them are currently running, so I am not sure which is best. 
+
+I am not even sure I need to pull anything down, because even the "wrong" files will work for this purpose, they just need to exist. Ah, but they need to be converted correctly... I think I did do that, which is where I noticed the mistake in terms of SDF size. Yes, that appears to be true.
+
+See the sdfs:
+
+```sh
+$ fd -e sdf
+ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf
+ADRB2/ADRB2_4lde_active_glide_lib.sdf
+ADRB2/ADRB2_4lde_inactive_docking_lib_sorted.sdf
+ADRB2/ADRB2_4lde_inactive_glide_lib.sdf
+ALDH1/ALDH1_5l2m_active_glide_lib.sdf
+ALDH1/ALDH1_5l2m_inactive_glide_lib.sdf
+ESR1ago/ESR1ago_2qzo_active_glide_lib.sdf
+ESR1ago/ESR1ago_2qzo_inactive_glide_lib.sdf
+FEN1/FEN1_5fv7_active_glide_lib.sdf
+FEN1/FEN1_5fv7_inactive_glide_lib.sdf
+GBA/GBA_2v3d_active_glide_lib.sdf
+GBA/GBA_2v3d_inactive_glide_lib.sdf
+IDH1/IDH1_4umx_active_glide_lib.sdf
+IDH1/IDH1_4umx_inactive_glide_lib.sdf
+KAT2A/KAT2A_5mlj_active_glide_lib.sdf
+KAT2A/KAT2A_5mlj_inactive_glide_lib.sdf
+MAPK1/MAPK1_4zzn_active_glide_lib.sdf
+MAPK1/MAPK1_4zzn_inactive_glide_lib.sdf
+MTORC1/MTORC1_4dri_active_glide_lib.sdf
+MTORC1/MTORC1_4dri_inactive_glide_lib.sdf
+OPRK1/OPRK1_6b73_active_glide_lib.sdf
+OPRK1/OPRK1_6b73_inactive_glide_lib.sdf
+PKM2/PKM2_3gr4_active_glide_lib.sdf
+PKM2/PKM2_3gr4_inactive_glide_lib.sdf
+PPARG/PPARG_3b1m_active_glide_lib.sdf
+PPARG/PPARG_3b1m_inactive_glide_lib.sdf
+TP53/TP53_3zme_active_glide_lib.sdf
+TP53/TP53_3zme_inactive_glide_lib.sdf
+VDR/VDR_3a2j_active_glide_lib.sdf
+VDR/VDR_3a2j_inactive_glide_lib.sdf
+```
+However, I did not finish running the strain. 
+
+Remember I have a `glide_sort_writer.py` in `/chembl_ligands/grids_lit-pcba`
+
+We should work on making the strain writer now. 
+
+I think rather than trying to think so many steps ahead, it is easier to just make a strain writer that adapts to the current naming conventions. I think refactored at the output of the metric files is most appropriate, as I already have all the names set from the docking runs. I could also re-write the glide sort utility to use the hyphen, and then it is perserved. Let's try it like that, since we will need to re-run all the glide sort utility as well. 
+
+I should also get a workflow to get rid of "v2" I think I can just `cp` or `rsync` over my results, but we can do that later. 
+
+`glide_sort_writer.py` has been updated to write PROTEIN-PDBID files, which hopefully reduce complexity moving forward. However, I did replace `.sdfgz` with `_sorted.sdf` which may have been a bad idea. 
+
+It is best to now write the strain script. A little worried about the anti-overwriting functionality right now in my torsion scripts. Probably want to either find a careful `rm` command for prototyping. 
+
+I have `strain_writer.py` at a point where it is about ready to run the commands, I think I just need to integrate something like this: 
+
+```py
+import subprocess
+
+# Assuming `commands` is your list of commands to run in parallel
+# For example: commands = ['conda run -n myenv python path/to/script.py', 'conda run -n myenv python path/to/script.py']
+commands = [...]
+commands_string = "\n".join(commands)
+
+# Setup subprocess to call parallel, sending the commands via stdin
+process = subprocess.Popen(
+    ["parallel"],  # Call GNU Parallel
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+
+# Pass the commands string to GNU Parallel through stdin
+# and capture stdout and stderr
+stdout, stderr = process.communicate(input=commands_string)
+
+# Optionally, handle the output and errors
+print(stdout)
+if stderr:
+    print(f"Errors:\n{stderr}")
+
+# Example for saving stdout and stderr to files
+with open('parallel_output.txt', 'w') as f_out, open('parallel_errors.txt', 'w') as f_err:
+    f_out.write(stdout)
+    if stderr:
+        f_err.write(stderr)
+```
