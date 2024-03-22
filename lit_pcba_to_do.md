@@ -859,6 +859,76 @@ For the `actives_rdkit_ligprep.log` files, they were always run with `-NJOBS 1` 
 
 It looks like we are good to go. 
 
+Should update the rsf script, really tired of the issues. 
+
+I have fixed the rsf script and I also have a new script to enable persistent connections to a server, just a small QoL improvement. It is in `~/scripts/ssh/establish_connections.sh`. It relies on some changes in my `~/.ssh/config` file as well. 
+
+Now, I think we can run the docking. Here how the files are set up: 
+
+```sh
+$ cat FEN1_5fv7_active.sh FEN1_5fv7_inactive.sh
+/mnt/data/dk/Schrodinger_adv_2021_1/glide -HOST localhost:1 -NJOBS 1 -OVERWRITE -JOBNAME FEN1_5fv7_active_glide FEN1_5fv7_active.in
+/mnt/data/dk/Schrodinger_adv_2021_1/glide -HOST localhost:100 -NJOBS 450 -OVERWRITE -JOBNAME FEN1_5fv7_inactive_glide FEN1_5fv7_inactive.in
+```
+Both the active and inactive has `.sh` files that will call the `.in` files, let's see how those look: 
+
+```sh
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/FEN1/FEN1_5fv7_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/FEN1/actives_rdkit_ligprep.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
+```
+```sh
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/FEN1/FEN1_5fv7_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/FEN1/inactives_rdkit.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
+```
+So based on the GRIDFILE and LIGANDFILE path being the same across the servers (I think it is). We can just run them. 
+The tricky thing is to run just the desired `.sh` file I think. I can see via fd that we do have a lot of .sh files, but we only need to run the desired ones. The last thing I am not sure about is if I can them from outside the actual directory. I can try a quick demo with an active file like this: 
+
+```sh
+# @karla
+/mnt/data/dk/work/grids_lit-pcba
+sh FEN1/FEN1_5fv7_active.sh
+ERROR
+```
+
+No, you have to be in the actual directory because the pathing to the inp file is relative from where you run the `sh` command. Annoying but it is what it is. A future solution is to code the output directory so I can finally be done with this annoying path related issues. For now, I think I just run them manually without coding out logic for it. Big jobs on big servers, rsync at the end. 
+
+| Protein  | PDB_ID | wc -l .smi | rerun glide    |
+|----------|--------|------------|----------------|
+| ADRB2    | 4lde   | 483277     | *KAR - RUNNING*   |
+| ALDH1    | 5l2m   | 228327     | *COS - RUNNING*   |
+| ESR1ago  | 2qzo   | 8341       | *ANT - RUNNING*   |
+| ESR1ant  | 2iog   | 7452       | *ANT - RUNNING*   |
+| FEN1     | 5fv7   | 558263     | *KAR*   |
+| GBA      | 2v3d   | 475989     | no      | * no inactives_rdkit.log
+| IDH1     | 4umx   | 566613     | *COS*   |
+| KAT2A    | 5mlj   | 540568     | *KAR*   |
+| MAPK1    | 4zzn   | 111544     | *ANT*   |
+| MTORC1   | 4dri   | 41057      | *KAR*   |
+| OPRK1    | 6b73   | 419268     | *COS*   |
+| PKM2     | 3gr4   | 383472     | *ANT*   |
+| PPARG    | 3b1m   | 7751       | *ANT*   |
+| TP53     | 3zme   | 6035       | *ANT*   |
+| VDR      | 3a2j   | 567631     | *KAR*   |
+
+Anton doesn't have the grids_lit_pcba directory, running rsync.
+
+Anton can run the smaller jobs and have Karla/Cosmos run the larger ones. Still, without Tobias, this will take awhile. 
+
+In the meanwhile, we could handle the GPCR-Bench updates and the change we'll need for Pareto ranks on scale (either skipping it temporarily or optimizing it)
+
+
 - Torsion_Strain 
 
 then 
@@ -867,6 +937,9 @@ then
 
 ## GPCR Bench 
 
-- integrate updated papermill notebook 
+- integrate updated papermill notebook
+
+
+
 - rerun data analysis 
 
