@@ -299,8 +299,10 @@ def plot_histogram_dscore(df, title_suffix):
     # Show the plot
     plt.show()
 
+
 # %%
 plot_histogram_dscore(all_data, title_suffix)
+
 
 # %%
 def plot_density_strain(df, title_suffix):
@@ -323,8 +325,10 @@ def plot_density_strain(df, title_suffix):
     # Show the plot
     plt.show()
 
+
 # %%
 plot_density_strain(all_data, title_suffix)
+
 
 # %%
 def plot_histogram_strain(df, title_suffix):
@@ -475,8 +479,10 @@ def bar_plot_enrichment_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
+
 # %%
 bar_plot_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def bar_plot_delta_enrichment_by_strain(data, thresholds, title_suffix):
@@ -509,8 +515,10 @@ def bar_plot_delta_enrichment_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
+
 # %%
 bar_plot_delta_enrichment_by_strain(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def plot_enrichment_curve_by_strain(df, total_e_threshold=None, ax=None, color="blue"):
@@ -554,6 +562,7 @@ def plot_enrichment_curve_by_strain(df, total_e_threshold=None, ax=None, color="
 
     ax.legend()
 
+
 def plot_enrichment_all_thresholds(data, thresholds, title_suffix):
     # Create a single plot
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -587,6 +596,7 @@ def plot_enrichment_all_thresholds(data, thresholds, title_suffix):
 
 
 plot = plot_enrichment_all_thresholds(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def write_enrichment_metrics(data, thresholds, title_suffix):
@@ -630,6 +640,7 @@ write_enrichment_metrics(all_data, total_e_thresholds, title_suffix)
 # %% [markdown]
 #  # Linear Log ROC AUC by Strain Threshold
 
+
 # %%
 def logauc_by_strain(df, a=1e-3, total_e_threshold=None):
     # Filter dataframe based on 'Total_E' threshold if provided
@@ -658,6 +669,7 @@ def logauc_by_strain(df, a=1e-3, total_e_threshold=None):
 
     return log_auc
 
+
 # %%
 def plot_log_aucs(data, thresholds, title_suffix):
     # Calculate log_auc for each threshold and plot
@@ -672,8 +684,10 @@ def plot_log_aucs(data, thresholds, title_suffix):
     plt.ylabel("Linear Log10 AUC (x10)")
     plt.show()
 
+
 # %%
 plot_log_aucs(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def plot_delta_log_aucs(data, thresholds, title_suffix):
@@ -694,8 +708,10 @@ def plot_delta_log_aucs(data, thresholds, title_suffix):
     plt.ylabel("Delta Linear Log10 AUC (x10)")
     plt.show()
 
+
 # %%
 plot_delta_log_aucs(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def write_log_aucs_delta_auc(data, thresholds, title_suffix):
@@ -721,8 +737,10 @@ def write_log_aucs_delta_auc(data, thresholds, title_suffix):
     df.to_csv(f"./papermill/csv/strain_log_aucs_{title_suffix}.csv", index=False)
     display(df)
 
+
 # %%
 write_log_aucs_delta_auc(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def plot_semi_log_roc(df, a=1e-3, total_e_threshold=None, ax=None, color="blue"):
@@ -760,6 +778,7 @@ def plot_semi_log_roc(df, a=1e-3, total_e_threshold=None, ax=None, color="blue")
     )
     ax.legend()
 
+
 # %%
 def plot_all_thresholds(data, thresholds, title_suffix):
     # Create a single plot
@@ -790,12 +809,14 @@ def plot_all_thresholds(data, thresholds, title_suffix):
     plt.tight_layout()
     plt.show()
 
+
 # %%
 plot = plot_all_thresholds(all_data, total_e_thresholds, title_suffix)
 
 # %%
 # %% [markdown]
 #  # ROC AUC by Strain Threshold
+
 
 # %%
 def plot_roc_curve_inverted(data, total_e_threshold, ax, title_suffix, color="blue"):
@@ -850,6 +871,7 @@ def plot_roc_curve_inverted(data, total_e_threshold, ax, title_suffix, color="bl
         f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
     )
 
+
 # %%
 def plot_roc_curves_all_thresholds(data, thresholds, title_suffix):
     # Create a single plot
@@ -880,8 +902,10 @@ def plot_roc_curves_all_thresholds(data, thresholds, title_suffix):
 
     plt.show()
 
+
 # %%
 plot_roc_curves_all_thresholds(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def bar_plot_difference_in_auc_by_strain(data, thresholds, title_suffix):
@@ -927,8 +951,10 @@ def bar_plot_difference_in_auc_by_strain(data, thresholds, title_suffix):
     plt.legend()
     plt.show()
 
+
 # %%
 bar_plot_difference_in_auc_by_strain(all_data, total_e_thresholds, title_suffix)
+
 
 # %%
 def write_roc_metrics(data, thresholds, title_suffix):
@@ -986,6 +1012,7 @@ def write_roc_metrics(data, thresholds, title_suffix):
     df.to_csv(f"./papermill/csv/strain_roc_metrics_{title_suffix}.csv", index=False)
     display(df)
 
+
 # %%
 write_roc_metrics(all_data, total_e_thresholds, title_suffix)
 
@@ -997,6 +1024,7 @@ write_roc_metrics(all_data, total_e_thresholds, title_suffix)
 data = all_data
 chosen_rank_amount = 20
 rank_thresholds = [10, 20]
+
 
 # %%
 def identify_pareto(scores):
@@ -1022,6 +1050,7 @@ def find_pareto_ranks(scores, max_ranks=100):
         if remaining_scores.shape[0] == 0:
             break
     return ranks
+
 
 # %%
 # Extract the scores for the entire dataset
@@ -1148,6 +1177,7 @@ def enrichment_metrics(df):
     )
     return ef1, ef5
 
+
 # %%
 def compare_enrichment_metrics_for_ranks(
     df, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
@@ -1189,11 +1219,13 @@ def compare_enrichment_metrics_for_ranks(
     plt.tight_layout()
     plt.show()
 
+
 # %%
 # Usage example
 compare_enrichment_metrics_for_ranks(
     data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
 )
+
 
 # %%
 def bar_plot_delta_enrichment_by_pareto(
@@ -1238,11 +1270,13 @@ def bar_plot_delta_enrichment_by_pareto(
     plt.tight_layout()
     plt.show()
 
+
 # %%
 # Usage example, assuming `data`, `pareto_ranks_indices`, and `title_suffix` are defined
 bar_plot_delta_enrichment_by_pareto(
     data, pareto_ranks_indices, rank_thresholds, title_suffix=title_suffix
 )
+
 
 # %%
 def plot_enrichment_curve_by_pareto(
@@ -1293,10 +1327,12 @@ def plot_enrichment_curves_by_pareto_ranks(
     plt.tight_layout()
     plt.show()
 
+
 # %%
 plot_enrichment_curves_by_pareto_ranks(
     data, pareto_ranks_indices, rank_thresholds, title_suffix
 )
+
 
 # %%
 def write_enrichment_metrics_pareto(
@@ -1348,12 +1384,14 @@ def write_enrichment_metrics_pareto(
     )
     display(df_to_csv)
 
+
 write_enrichment_metrics_pareto(
     data, pareto_ranks_indices, [10, 20], title_suffix=title_suffix
 )
 
 # %% [markdown]
 #  # Pareto Linear Log ROC AUC
+
 
 # %%
 def logauc_by_pareto(df, pareto_ranks_indices, rank_thresholds, a=1e-3):
@@ -1380,6 +1418,7 @@ def logauc_by_pareto(df, pareto_ranks_indices, rank_thresholds, a=1e-3):
 
     return log_auc
 
+
 # %%
 def plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
     # Calculate log AUC for the entire dataset
@@ -1404,6 +1443,7 @@ def plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suff
 # %%
 plot_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
 
+
 # %%
 def plot_delta_log_aucs_pareto(
     data, pareto_ranks_indices, rank_thresholds, title_suffix
@@ -1426,8 +1466,10 @@ def plot_delta_log_aucs_pareto(
     plt.ylabel("Delta Linear Log10 AUC (x10)")
     plt.show()
 
+
 # %%
 plot_delta_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
 
 # %%
 def plot_semi_log_roc_pareto(
@@ -1460,6 +1502,7 @@ def plot_semi_log_roc_pareto(
     )
     ax.legend()
 
+
 # %%
 def plot_all_thresholds_pareto(df, pareto_ranks_indices, rank_thresholds, title_suffix):
     fig, ax = plt.subplots(figsize=(10, 10))
@@ -1487,8 +1530,10 @@ def plot_all_thresholds_pareto(df, pareto_ranks_indices, rank_thresholds, title_
     plt.tight_layout()
     plt.show()
 
+
 # %%
 plot_all_thresholds_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
+
 
 # %%
 def write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix):
@@ -1532,6 +1577,7 @@ write_log_aucs_pareto(data, pareto_ranks_indices, rank_thresholds, title_suffix)
 # %% [markdown]
 #  # Pareto ROC AUC
 
+
 # %%
 def plot_roc_curve_inverted_pareto(
     data, pareto_ranks_indices, rank_threshold, ax, title_suffix, color="blue"
@@ -1573,6 +1619,7 @@ def plot_roc_curve_inverted_pareto(
     ax.set_title(
         f"Receiver Operating Characteristic (Inverted Scores) ({title_suffix})"
     )
+
 
 # %%
 def plot_all_roc_thresholds_pareto(
@@ -1618,6 +1665,7 @@ plot_all_roc_thresholds_pareto(
     rank_thresholds=rank_thresholds,
     title_suffix=title_suffix,
 )
+
 
 # %%
 def bar_plot_difference_in_auc_by_pareto(
@@ -1685,10 +1733,12 @@ def bar_plot_difference_in_auc_by_pareto(
     plt.legend()
     plt.show()
 
+
 # %%
 bar_plot_difference_in_auc_by_pareto(
     data, pareto_ranks_indices, rank_thresholds, title_suffix
 )
+
 
 # %%
 def write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix):
@@ -1764,20 +1814,22 @@ def write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_
     )
     display(df)
 
+
 # %%
 write_pareto_roc_metrics(data, pareto_ranks_indices, rank_thresholds, title_suffix)
 
 # %% [markdown]
 #  # Pareto Ranks as Scores
-# 
+#
 #  1. Calculate Pareto ranks of an the entire dataset
-# 
+#
 #  2. For Enrichment: Rank order by pareto rank (however that is an awkward implementation, as large sets of compounds will share a rank)
-# 
+#
 #  3. for ROC-AUC and ROC-logAUC, pareto ranking becomes the scoring function.
 
 # %% [markdown]
 #  We need a new find_pareto_ranks() that does not have a limit on the amount of ranks.
+
 
 # %%
 def find_all_pareto_ranks(scores):
@@ -1790,6 +1842,7 @@ def find_all_pareto_ranks(scores):
         remaining_scores = np.delete(remaining_scores, pareto_indices, axis=0)
         remaining_indices = np.delete(remaining_indices, pareto_indices)
     return ranks
+
 
 # %%
 # %% [markdown]
@@ -1899,7 +1952,7 @@ display(all_pareto_front_df.index)
 
 # %% [markdown]
 #  `all_pareto_front_df` is in the correct "order" of pareto fronts by rank, however that is not very useful directly. as points in a front are considered "optimal". while I didn't intentionall set it: the ranks themselves are ordered by docking score **within** the rank itself. this could be useful later, so I don't want to disregard it.
-# 
+#
 #  however, what we need right now is the ability to map `total_pareto_ranks_indices` to the `all_pareto_front_df` dataframe. `total_pareto_ranks_indices` is a list of arrays containing the pareto front points, by their rank
 
 # %%
@@ -1914,15 +1967,15 @@ for rank, indices in enumerate(total_pareto_ranks_indices):
 
 # %% [markdown]
 #  Because of how we handled the enrichment calculations (setting index values to start at 1 and not 0), we now need a work around for using iloc. I don't really get why, but I can't get a solution other than the strange one below.
-# 
+#
 #  iloc is indices based, **this is different than saying index based**, so iloc[0] is the first row of your dataframe. when we set our **labels** to start at 1, the index value we see as iloc[0] is 1
-# 
+#
 #  total_pareto_rank_indices has the actual **indicies** of the dataframe, which require using iloc to access successfully, unless we want to redo the index labels. i am too worried right now that this will introduce new problems somehow, so i don't want to touch it.
-# 
+#
 #  instead, we need to use get_loc. this is very unintuitive because you would think that get_loc (a pandas function) would return something you would use for df.loc related tasks. but no, get_loc is a method of the index class and is used to get the indice for a labeled index value in the dataframe.
-# 
+#
 #  get_loc() here is actually returning just one number, that is whatever the column based index that ParetoRank is.
-# 
+#
 #  also, i should have really handled my version control differently. this should have been a branch so i could have definitely kept the working completely okay code. i should have also used git tag to confirm that the code works
 
 # %%
@@ -2010,10 +2063,11 @@ display(
 
 # %% [markdown]
 #  Now we need to get enrichment metrics as well as save them to file.
-# 
+#
 #  For Enrichment: We sort by pareto rank, but this metric doesn't really make sense in this context.
-# 
+#
 #  For ROC, we use Rank as our score. Let's do this first.
+
 
 # %%
 def plot_pareto_rank_semi_log_roc(df, a=1e-3, ax=None):
@@ -2059,7 +2113,6 @@ def plot_pareto_rank_semi_log_roc(df, a=1e-3, ax=None):
 fig, ax = plt.subplots(figsize=(12, 10))
 plot_pareto_rank_semi_log_roc(df_copy, a=1e-3, ax=ax)
 plt.show()
-
 
 
 # %%
@@ -2114,25 +2167,28 @@ def write_pareto_rank_metrics(df, a=1e-3, title_suffix=title_suffix):
 
     y_scores_baseline_log = -df["r_i_docking_score"]
 
-    fpr_baseline_log, tpr_baseline_log, _ = roc_curve(df["Activity"], y_scores_baseline_log)
-    
+    fpr_baseline_log, tpr_baseline_log, _ = roc_curve(
+        df["Activity"], y_scores_baseline_log
+    )
+
     valid_indices_baseline_log = np.where(fpr_baseline_log >= a)
-    
+
     log_fpr_valid_baseline_log = np.log10(fpr_baseline_log[valid_indices_baseline_log])
-    
+
     log_auc_baseline = (
-        auc(log_fpr_valid_baseline_log, tpr_baseline_log[valid_indices_baseline_log]) / -np.log10(a)
+        auc(log_fpr_valid_baseline_log, tpr_baseline_log[valid_indices_baseline_log])
+        / -np.log10(a)
     ) * 10
 
     # New scores
     y_scores_new_log = df["ParetoRank"]
-    
+
     fpr_new_log, tpr_new_log, _ = roc_curve(df["Activity"], y_scores_new_log)
-    
+
     valid_indices_new_log = np.where(fpr_new_log >= a)
-    
+
     log_fpr_valid_new = np.log10(fpr_new_log[valid_indices_new_log])
-    
+
     log_auc_new = (
         auc(log_fpr_valid_new, tpr_new_log[valid_indices_new_log]) / -np.log10(a)
     ) * 10
@@ -2161,14 +2217,17 @@ def write_pareto_rank_metrics(df, a=1e-3, title_suffix=title_suffix):
         "Delta Linear Log10 AUC (x10)": deltaLogAUC,
     }
 
-    pareto_ranking_metrics = pd.concat([pareto_ranking_metrics, pd.DataFrame([new_row])], ignore_index=True)
-
-    pareto_ranking_metrics.to_csv(
-        f"./papermill/ParetoRankCSV/ParetoRanking_metrics_{title_suffix}.csv", index=False
+    pareto_ranking_metrics = pd.concat(
+        [pareto_ranking_metrics, pd.DataFrame([new_row])], ignore_index=True
     )
 
+    pareto_ranking_metrics.to_csv(
+        f"./papermill/ParetoRankCSV/ParetoRanking_metrics_{title_suffix}.csv",
+        index=False,
+    )
 
     return pareto_ranking_metrics
+
 
 write_pareto_rank_metrics(df_copy)
 
