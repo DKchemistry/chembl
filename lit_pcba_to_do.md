@@ -914,12 +914,12 @@ No, you have to be in the actual directory because the pathing to the inp file i
 | GBA      | 2v3d   | 475989     | no      | * no inactives_rdkit.log
 | IDH1     | 4umx   | 566613     | *COS*   |
 | KAT2A    | 5mlj   | 540568     | *KAR*   |
-| MAPK1    | 4zzn   | 111544     | *ANT*   |
-| MTORC1   | 4dri   | 41057      | *KAR*   |
+| MAPK1    | 4zzn   | 111544     | *COS - RUNNING*   |
+| MTORC1   | 4dri   | 41057      | *ANT*   |
 | OPRK1    | 6b73   | 419268     | *COS*   |
 | PKM2     | 3gr4   | 383472     | *ANT*   |
-| PPARG    | 3b1m   | 7751       | *ANT*   |
-| TP53     | 3zme   | 6035       | *ANT*   |
+| PPARG    | 3b1m   | 7751       | *ANT - RUNNING*   |
+| TP53     | 3zme   | 6035       | *ANT - RUNNING*   |
 | VDR      | 3a2j   | 567631     | *KAR*   |
 
 Anton doesn't have the grids_lit_pcba directory, running rsync.
@@ -937,7 +937,27 @@ then
 
 ## GPCR Bench 
 
-- integrate updated papermill notebook
+### integrate updated papermill notebook
+
+Need to back up GPCR-bench master first.
+
+```sh
+cp -r GPCR-Bench-master/ v2-GPCR-Bench-master
+```
+
+file is 
+
+```sh
+v2_gpcr_papermill.py
+```
+
+We need to convert to a ipynb, inject params, make the papermill runner user it
+
+I have the injected params, need to find the note book that runs it. 
+
+Ran the notebook. Going to inspect some results briefly and then put together a better data analysis pipeline. 
+
+What? All the outputs are in correct. Even though I ran it on the v2 notebook it doesn't have any v2 notebook style data? Oh, I did not actually call v2 where it runs the notebook, I only changed what it inspects. This is now updated. 
 
 
 
