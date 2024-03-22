@@ -910,14 +910,14 @@ No, you have to be in the actual directory because the pathing to the inp file i
 | ALDH1    | 5l2m   | 228327     | *COS - RUNNING*   |
 | ESR1ago  | 2qzo   | 8341       | *ANT - RUNNING*   |
 | ESR1ant  | 2iog   | 7452       | *ANT - RUNNING*   |
-| FEN1     | 5fv7   | 558263     | *KAR*   |
+| FEN1     | 5fv7   | 558263     | *KAR - RUNNING*   |
 | GBA      | 2v3d   | 475989     | no      | * no inactives_rdkit.log
-| IDH1     | 4umx   | 566613     | *COS*   |
+| IDH1     | 4umx   | 566613     | *COS - RUNNING*   |
 | KAT2A    | 5mlj   | 540568     | *KAR*   |
 | MAPK1    | 4zzn   | 111544     | *COS - RUNNING*   |
-| MTORC1   | 4dri   | 41057      | *ANT*   |
-| OPRK1    | 6b73   | 419268     | *COS*   |
-| PKM2     | 3gr4   | 383472     | *ANT*   |
+| MTORC1   | 4dri   | 41057      | *ANT - RUNNING*   |
+| OPRK1    | 6b73   | 419268     | *COS - RUNNING*   |
+| PKM2     | 3gr4   | 383472     | *ANT - RUNNING*   |
 | PPARG    | 3b1m   | 7751       | *ANT - RUNNING*   |
 | TP53     | 3zme   | 6035       | *ANT - RUNNING*   |
 | VDR      | 3a2j   | 567631     | *KAR*   |
@@ -959,7 +959,44 @@ Ran the notebook. Going to inspect some results briefly and then put together a 
 
 What? All the outputs are in correct. Even though I ran it on the v2 notebook it doesn't have any v2 notebook style data? Oh, I did not actually call v2 where it runs the notebook, I only changed what it inspects. This is now updated. 
 
+It would probably be best to have the inspect/run act on a variable set to the notebook to prevent these issues in the future. 
 
+### Statistics Scripts 
 
-- rerun data analysis 
+1. Run `v2_GPCR-Bench-master/papermill/csv/combine_data.ipynb` to generate the intermediate and combined data files. NOTE: Be careful to not run it as an unsaved interactive python file, as it will default to running in a directory you might not expect. 
 
+Files generated:  
+`csv/concat/*` (strain_enrichment_metrics_concat_<PDB_ID>, strain_log_aucs_concat_<PDB_ID>, strain_roc_metrics_concat_<PDB_ID>)
+`csv/combined_data.csv`
+
+`combined_data.csv` has this form: 
+
+| Protein | Strain Energy Cutoff | EF1% | EF5% | deltaEF1% | deltaEF5% | Linear Log10 AUC (x10) | Delta Linear Log10 AUC (x10) | ROC_AUC | Actives | Total Count | deltaAUC |
+|---------|---------------------|------|------|-----------|-----------|------------------------|-------------------------------|---------|---------|-------------|----------|
+
+It does not include the 'pareto as scores' style data. 
+
+| Strain Energy Cutoff |
+|----------------------|
+| No Cutoff |
+| 4 |
+| 4.5 |
+| 5.0 |
+| 5.5 |
+| 6.0 |
+| 7.0 |
+| 7.5 |
+| 8.0 |
+| Top 10 Pareto Ranks |
+| Top 20 Pareto Ranks |
+
+The next row would be `No Cutoff` again (you can run the below to check)
+
+```sh
+cut -d',' -f2 combined_data.csv | head -n 13 | tail -n +2
+# head -n 13 will produce the repeated no cut off line
+```
+
+So, we should be able to use this file with the LIT PCBA data as well, as we are unlikely to do the Pareto scores approach. 
+
+Now, we need to recall how the summary statistics are generally found. 
