@@ -2,6 +2,7 @@
 import pandas as pd
 import os
 from pprint import pprint
+import subprocess
 
 # print current working dir
 print(os.getcwd())
@@ -61,36 +62,25 @@ sdf_csv_dict = dict(zip(sdf_files, output_csv_files))
 print(sdf_csv_dict)
 # %% [markdown]
 # # Previously successful command:
-# ```sh
-# glide_sort -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf" -use_dscore -best_by_title "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_glide_lib.sdfgz"
+# ```bash
+# python ~/scripts/strain/refactor_Torsion_Strain.py -i "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_inactive_docking_lib_sorted.sdf" -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
 # ```
 # %%
-import pyperclip
 
 # %%
 
-for key, value in sdfgz_sdf_dict.items():
-    print(f"glide_sort -o {value} -use_dscore -best_by_title {key}")
-
-# %%
-
-# copy = []
-# for key, value in sdfgz_sdf_dict.items():
-# #  print(f"glide_sort -o {value} -use_dscore -best_by_title {key}")
-#   copy.append(f"glide_sort -o {value} -use_dscore -best_by_title {key}")
-
-# pyperclip.copy("\n".join(copy))
-# pyperclip.paste()
-
-# %%
-import subprocess
+for key, value in sdf_csv_dict.items():
+    print(f"conda run analytics_env python ~/scripts/strain/refactor_Torsion_Strain.py -i {key} -o {value}")
 
 # %%
 commands = []
-for key, value in sdfgz_sdf_dict.items():
-    commands.append(f"glide_sort -o {value} -use_dscore -best_by_title {key}")
+for key, value in sdf_csv_dict.items():
+    commands.append(
+        f"conda run analytics_env python ~/scripts/strain/refactor_Torsion_Strain.py -i {key} -o {value}"
+    )
 print(commands)
 # %%
+
 # to use parallel via GNU parallel, we need to split this list into new lines
 commands_string = "\n".join(commands)
 print(commands_string)
@@ -103,19 +93,32 @@ process = subprocess.Popen(
     stderr=subprocess.PIPE,
     text=True,
 )
-# pass the commands to the subprocess stdin via communicate, the passing to stdin is implicit, you can't set communicate(stdin=commands_string).
-# stdout, stderr = process.communicate(commands_string)
+# %%
 
-# # print the output
-# print(stdout)
-# if stderr:
-#     print(f"Errors:\n{stderr}")
+commands_string = "\n".join(commands)
 
-# # Save stdout and stderr to a file
-# with open('glide_sort_writer_output.txt', 'w') as f:
-#     f.write("STDOUT:\n")
-#     f.write(stdout)
-#     if stderr:
-#         f.write("\nSTDERR:\n")
-#         f.write(stderr)
-# # %%
+# Setup subprocess to call parallel, sending the commands via stdin
+process = subprocess.Popen(
+    ["parallel"],  # Call GNU Parallel
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+
+# Pass the commands string to GNU Parallel through stdin
+# and capture stdout and stderr
+stdout, stderr = process.communicate(commands_string)
+
+# handle the output and errors
+print(stdout)
+if stderr:
+    print(f"Errors:\n{stderr}")
+
+# saving stdout and stderr to files
+with open("parallel_strain_writer.log", "w") as f_out, open(
+    "parallel_errors.txt", "w"
+) as f_err:
+    f_out.write(stdout)
+    if stderr:
+        f_err.write(stderr)
