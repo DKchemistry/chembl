@@ -928,7 +928,20 @@ Anton can run the smaller jobs and have Karla/Cosmos run the larger ones. Still,
 
 In the meanwhile, we could handle the GPCR-Bench updates and the change we'll need for Pareto ranks on scale (either skipping it temporarily or optimizing it)
 
-Well, EXTREMELY UNFORTUNATELY, anton seems to have died. I either run all those jobs elsewhere, or wait for the server. I updated the lab. 
+Well, EXTREMELY UNFORTUNATELY, anton seems to have died. I either run all those jobs elsewhere, or wait for the server. I updated the lab.
+
+### Anton Re-Runs
+
+| Protein  | PDB_ID | wc -l .smi | rerun glide    |
+|----------|--------|------------|----------------|
+| ESR1ago  | 2qzo   | 8341       | *ANT - RUNNING kar*   |
+| ESR1ant  | 2iog   | 7452       | *ANT - RUNNING kar*   |
+| MTORC1   | 4dri   | 41057      | *ANT - RUNNING kar*   |
+| PKM2     | 3gr4   | 383472     | *ANT - RUNNING cos*   |
+| PPARG    | 3b1m   | 7751       | *ANT - RUNNING kar*   |
+| TP53     | 3zme   | 6035       | *ANT - RUNNING kar*   |
+
+Run: PKM2 then MTOR1, then small jobs. 
 
 - Torsion_Strain 
 
@@ -1088,8 +1101,10 @@ if stderr:
     print(f"Errors:\n{stderr}")
 
 # Example for saving stdout and stderr to files
-with open('parallel_output.txt', 'w') as f_out, open('parallel_errors.txt', 'w') as f_err:
+with open('parallel_strain_writer.log', 'w') as f_out, open('parallel_errors.txt', 'w') as f_err:
     f_out.write(stdout)
     if stderr:
         f_err.write(stderr)
 ```
+Best to run this from home/server to avoid interruptions. 
+
