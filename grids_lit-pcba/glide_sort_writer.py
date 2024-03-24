@@ -1,7 +1,9 @@
 # %%
 import pandas as pd
 import os
+import subprocess
 from pprint import pprint
+
 
 # print current working dir
 print(os.getcwd())
@@ -33,33 +35,25 @@ print(file_id)
 
 # %%
 sdfgz_files = []
+output_sdf_files = []
 
 for dirpath, dirnames, filenames in os.walk("."):
     for filename in filenames:
         if any(id in filename for id in file_id) and filename.endswith(".sdfgz"):
             sdfgz_file_path = os.path.abspath(os.path.join(dirpath, filename))
+            print("Found sdfgz input file:")
+            print(sdfgz_file_path)
             sdfgz_files.append(sdfgz_file_path)
+            # define output path naming convention
+            parts = os.path.basename(sdfgz_file_path).split("_")
+            parts_join = "-".join(parts[:2])+"_"+"_".join(parts[2:])
+            sdf_file = os.path.abspath(os.path.join(
+                dirpath, parts_join.replace(".sdfgz", "_sorted.sdf")
+            ))
+            print("Found sorted sdf output file:")
+            print(sdf_file)
+            output_sdf_files.append(sdf_file)
 
-print(sdfgz_files)
-# %%
-
-def replace_nth(s, old_seperator, new_seperator, n):
-    # split string into parts by `old_seperator`, this will be `_`. 
-    # We plan to replace the `old_seperator` at position `n`, which is `5`.
-    # We want to put in the `new_seperator` which is `-`.
-    # We join the parts back together with the `new_seperator` in the middle.
-    parts = s.split(old_seperator)
-    return old_seperator.join(parts[:n]) + new_seperator + old_seperator.join(parts[n:])
-
-
-output_sdf_files = []
-
-for file in sdfgz_files:
-    sdf_file = file.replace(".sdfgz", "_sorted.sdf")
-    sdf_file = replace_nth(sdf_file, "_", "-", 5)
-    output_sdf_files.append(sdf_file)
-
-print(output_sdf_files)
 # %%
 print(sdfgz_files[0], output_sdf_files[0])
 # %%
@@ -73,7 +67,7 @@ print(sdfgz_sdf_dict)
 # glide_sort -o "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_docking_lib_sorted.sdf" -use_dscore -best_by_title "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2_4lde_active_glide_lib.sdfgz"
 # ```
 # %%
-import pyperclip
+#import pyperclip
 
 # %%
 
@@ -89,10 +83,6 @@ for key, value in sdfgz_sdf_dict.items():
 
 # pyperclip.copy("\n".join(copy))
 # pyperclip.paste()
-
-# %%
-import subprocess
-
 # %%
 commands = []
 for key, value in sdfgz_sdf_dict.items():
