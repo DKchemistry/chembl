@@ -76,7 +76,7 @@ for key, value in sdf_csv_dict.items():
 commands = []
 for key, value in sdf_csv_dict.items():
     commands.append(
-        f"conda run analytics_env python ~/scripts/strain/refactor_Torsion_Strain.py -i {key} -o {value}"
+        f"conda run -n analytics_env python ~/scripts/strain/refactor_Torsion_Strain.py -i {key} -o {value}"
     )
 print(commands)
 # %%
