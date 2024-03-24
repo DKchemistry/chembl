@@ -1108,3 +1108,148 @@ with open('parallel_strain_writer.log', 'w') as f_out, open('parallel_errors.txt
 ```
 Best to run this from home/server to avoid interruptions. 
 
+Karla has `glide_sort` on path, should be good to run directly. Need to rsync local from server and then onto karla.
+
+Ran karla -> local. Once cosmos is done I can do that. I want to double check GBA though. 
+
+From my notes, I put everything related to ligand preparation: 
+
+```sh
+rsync -avhuzt "karla:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "cosmos:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "anton:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+rsync -avhuzt "tobias:'/mnt/data/dk/work/lit-pcba/'" "/Users/lkv206/work/lit-pcba/"
+```
+
+If go to that directory and check: 
+
+```sh
+/Users/lkv206/work/lit-pcba/GBA
+$ grep processed inactives_rdkit_ligprep.log | tail -n 1
+# of processed structures in "inactives_rdkit_ligprep.sdf" : 475980
+```
+Note that while this is `GBA`, it has the 'wrong' file ending. So the docking file should be checked as well. 
+
+```sh
+/mnt/data/dk/Schrodinger_adv_2021_1/glide -HOST localhost:100 -NJOBS 450 -OVERWRITE -JOBNAME GBA_2v3d_inactive_glide GBA_2v3d_inactive.in
+```
+
+```sh
+$ cat GBA_2v3d_inactive.in
+GRIDFILE /mnt/data/dk/work/grids_lit-pcba/GBA/GBA_2v3d_structcat-out_complex_prepared__grid.zip
+LIGANDFILE /mnt/data/dk/work/lit-pcba/GBA/inactives_rdkit.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
+```
+Huh, that is saying it ran on inactive_rdkit.sdf, also I can it ran on `tobias`. According to rsync I did pull down tobias, so let me check for `/mnt/data/dk/work/lit-pcba/GBA/inactives_rdkit.sdf`.
+
+Ah, right, no log file for the ligprep... worth it to rerun? Maybe I can find it on Tobias. 
+
+No I can't find it. Honestly, I think the re-run and re-dock is better for my sanity? But it looks SO correct:
+
+```sh
+@karla 
+/mnt/data/dk/work/lit-pcba/GBA
+❯ wc -l inactives_rdkit.smi
+475989 inactives_rdkit.smi
+❯ grep "\$\$\$\$" inactives_rdkit.sdf | wc -l
+475980
+```
+
+I think it is fine to run as is. If there is something wrong with the GBA data, I'll look at it again. I can compare stuff between the .smi and .sdf to make sure. Do I have the commands to run LigPrep and Glide easily? Glide it seems like for sure. But b/c there is no log for the LigPrep, I will have to find and re-run the command. 
+
+There is just no way I "accidentally" made the exactly correct file after starting with an incorrect file. Let's just sync for now and we can update later if we need to do. 
+
+Need cosmos sync to local. 
+
+Ah, cosmos is still running... 
+
+I guess we may as well do the LigPrep then, it will likely be on par with whatever cosmos is doing. Now I have these records to tell me that I AM RERUNNING LIGPREP FOR GBA ON KARLA. If the results are the same, chance is even less. 
+
+```sh
+/mnt/data/dk/Schrodinger/ligprep -inp /mnt/data/dk/scripts/job_writer/ligprep.inp -ismi /mnt/data/dk/work/lit-pcba/GBA/inactives_rdkit.smi -osd inactives_rdkit.sdf -HOST localhost:150 -NJOBS 450 -JOBNAME GBA_inactives_rdkit_ligprep
+```
+
+Okay, I launched it. 
+
+Strangely, karla's `/mnt/data/dk/work/grids_lit-pcba` doesn't have `.sh` files for ONLY `GBA`. 
+
+Just gonna confirm I have that locally and then run in reverse to get it there:
+
+```sh
+rsync -avhuzt --progress "karla:'/mnt/data/dk/work/grids_lit-pcba/'" "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/"
+Proceed with the transfer? (y/n): y
+receiving file list ...
+703 files to consider
+
+sent 16 bytes  received 19.02K bytes  12.69K bytes/sec
+total size is 10.96G  speedup is 575961.98
+```
+
+All good. So: 
+
+```sh
+rsync -avhuzt --progress "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/" "karla:'/mnt/data/dk/work/grids_lit-pcba/'"
+```
+
+```sh
+building file list ...
+900 files to consider
+adrb2_duplicate_check.py
+67.86K 100%   33.47MB/s    0:00:00 (xfer#1, to-check=898/900)
+```
+I should build a logging mechanism. Regardless, this is good. 
+
+So we'll get files up there. 
+
+I think my rsync command isn't ideal here because all of the ownership is listed as belonging to lkv206. I would think it wouldn't actually be a very large file transfer because karla/tobias/etc would have more updated copies of these files? No, unfortunately rsync isn't very good about perserving ownership and because there is a time difference between me and copenhagen, it is going to do the reupload again. Then on karla, it will be owned by 'dk' and lkv206, so a transfer locally will again be painful unless I specify some sort of time argument. In theory, when it is 9AM est, it is 3PM in copenhagen where the servers are, so copenhagen is "newer" by default. Why would it trigger a re-transfer then in my case? It seems it doesn't work like how I expect. Maybe there is some sort of checksum thing I can do, or maybe like git can do this somehow? I have no idea. If it becomes a big issue we can handle this. It's either this or git LFS, and I hate git lfs. 
+
+It seems checksum is best 
+
+```sh
+rsync -avhuzt --checksum --progress "karla:'/mnt/data/dk/work/grids_lit-pcba/'" "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/"
+```
+
+I will integrate this later. 
+
+GBA glide jobs started on Karla.
+
+Cosmos rsync to local started. 
+
+Once both are done, (1) all to local, (2) push to karla, (3) glide sort, (4) strain, fix notebook, execute notebook, summary stats. 
+
+1. All to local:
+
+ Karla -> local 
+
+```sh
+rsync -avhuzt --checksum --progress "karla:'/mnt/data/dk/work/grids_lit-pcba/'" "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/"
+```
+
+Cosmos -> local 
+
+I need to wait until the Karla -> Local is done to run the below, hard to interpert the --dry-run output. 
+
+```sh
+rsync -avhuzt --checksum --progress "cosmos:'/mnt/data/dk/work/grids_lit-pcba/'" "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/"
+```
+Both done. 
+
+2. Push to Karla
+
+```sh
+rsync -avhuzt --checksum --progress "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/" "karla:'/mnt/data/dk/work/grids_lit-pcba/'"
+```
+Really wish the transfer speed was faster. 
+
+3. glide sort:
+
+I probably run this without much issue using karla's `data_viz` conda env
+
+Oh, I think there is an issue, we are not getting the updated `protein-pdbid`, this is because the amount of underscores `_` is different. 
+
+Need to refactor this approach to just the base name somehow. 
