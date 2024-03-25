@@ -35,41 +35,45 @@ for key, value in protein_pdbid_dict.items():
 
 print(file_id)
 # %%
+# Get the current working directory (base path)
+base_path = os.getcwd()
 
 parameters_list = []
 
 for id in file_id:
+    protein_name, _ = id.split("-")  # Split the id to extract the protein name.
+
     parameters_dict = {}
-
-    parameters_dict["output_notebook"] = os.path.abspath(
-        os.path.join("papermill", "notebooks", (id + "_litpcba_papermill.ipynb"))
+    # Construct the path for output_notebook relative to base_path
+    parameters_dict["output_notebook"] = os.path.join(
+        base_path, "papermill", "notebooks", (id + "_litpcba_papermill.ipynb")
     )
-    # my mistake was not initalizing the empty dictionary first
     parameters_dict["parameters"] = {}
-
     parameters_dict["parameters"]["title_suffix"] = id
 
-    for dirpath, dirname, filenames in os.walk("."):
+    for dirpath, dirnames, filenames in os.walk(base_path):
         for filename in filenames:
-            if filename.endswith(f"{id}" + "_active_glide_lib_sorted.sdf"):
-                parameters_dict["parameters"]["file_path_sdf_active"] = os.path.abspath(
-                    filename
+            # Construct each path by checking if the filename ends with the required suffix
+            if filename.endswith(f"{id}_active_glide_lib_sorted.sdf"):
+                # Join the path without repeating the base path
+                parameters_dict["parameters"]["file_path_sdf_active"] = os.path.join(
+                    dirpath, filename
                 )
-            if filename.endswith(f"{id}" + "_inactive_glide_lib_sorted.sdf"):
-                parameters_dict["parameters"]["file_path_sdf_decoy"] = (
-                    os.path.abspath(filename)
+            if filename.endswith(f"{id}_inactive_glide_lib_sorted.sdf"):
+                parameters_dict["parameters"]["file_path_sdf_decoy"] = os.path.join(
+                    dirpath, filename
                 )
-            if filename.endswith(f"{id}" + "_active_glide_lib_sorted.csv"):
-                parameters_dict["parameters"]["file_path_strain_active"] = (
-                    os.path.abspath(os.path.join("strain", filename))
+            if filename.endswith(f"{id}_active_glide_lib_sorted.csv"):
+                parameters_dict["parameters"]["file_path_strain_active"] = os.path.join(
+                    dirpath, filename
                 )
-            if filename.endswith(f"{id}" + "_inactive_glide_lib_sorted.csv"):
-                parameters_dict["parameters"]["file_path_strain_decoy"] = (
-                    os.path.abspath(os.path.join("strain", filename))
+            if filename.endswith(f"{id}_inactive_glide_lib_sorted.csv"):
+                parameters_dict["parameters"]["file_path_strain_decoy"] = os.path.join(
+                    dirpath, filename
                 )
-    # print(parameters_dict)
-    # print("\n")
     parameters_list.append(parameters_dict)
+
+# pprint.pprint(parameters_list)
 pprint.pprint(parameters_list)
 print(len(parameters_list))
 # print(parameters_list[0])
