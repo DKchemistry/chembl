@@ -22,3 +22,6 @@
 #find . -type f -name '*.csv' -size +100M | sed 's|^\./||' >> .gitignore
 
 grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv
+
+#ignore back ups
+backup_GPCR-bench/
