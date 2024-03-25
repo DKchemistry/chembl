@@ -36,6 +36,8 @@ file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_li
 file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_active_glide_lib_sorted.csv"
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_inactive_glide_lib_sorted.csv"
 
+# previous bug was from incorrect file path
+
 # %% [markdown]
 #  # Data Processing
 
