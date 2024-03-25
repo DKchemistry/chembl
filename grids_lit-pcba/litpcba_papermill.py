@@ -115,11 +115,6 @@ print("Duplicates in active_sdf:", any(duplicates_actives))
 
 duplicates_decoys = decoy_sdf["Molecule_Name"].duplicated()
 print("Duplicates in decoy_sdf:", any(duplicates_decoys))
-# %%
-
-file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_active_docking_lib_sorted_strain.csv"
-file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2_4lde_inactive_docking_lib_sorted_strain.csv"
-
 
 # %%
 def concatenate_csv_files(file_list):
