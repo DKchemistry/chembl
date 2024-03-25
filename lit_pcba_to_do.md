@@ -1253,3 +1253,31 @@ I probably run this without much issue using karla's `data_viz` conda env
 Oh, I think there is an issue, we are not getting the updated `protein-pdbid`, this is because the amount of underscores `_` is different. 
 
 Need to refactor this approach to just the base name somehow. 
+
+Very satisfying, figured that out almost completely by myself. Used the os library to handle pathing instead of naively counting underscores and seperating them. 
+
+Use git to commit the change with a proper message, rsync to karla. 
+
+Now to delete unwanted sdf files, to prevent clutter. 
+
+```sh
+fd -e sdf | xargs rm
+```
+I should run this locally as well to clean the directory. 
+
+It would be nice to have a sort of `backup.sh` script that automatically backs up my directory to some location, but that's a later project. 
+
+You should use `--exec` when possible, e.g:
+
+```sh
+fd -e sdf --exec rm {}
+```
+Strangely, the output files didn't filter any poses out? Weird but not impossible, will simply be careful when examining papermill output.
+
+4. strain_writer:
+
+I should also update `strain_writer.py` to use more portable logic? But it actually seems okay right now.
+
+The bigger issue is that I want to have analytics_env on karla as I will otherwise have portability issues. 
+
+Fixed all the env/execution related issues found so far, executed the script. It is not very fast, waiting on completion, then need a karla -> local rsync. Then ssh papermill set up. 
