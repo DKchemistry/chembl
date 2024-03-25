@@ -18,11 +18,12 @@ pd.set_option("display.max_columns", None)
 title_suffix = "ADRB2-4lde"
 
 # Files we are processing
-file_path_sdf_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2-4lde_active_docking_lib_sorted.sdf"
-file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2-4lde_inactive_docking_lib_sorted.sdf"
+file_path_sdf_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2-4lde_active_glide_lib_sorted.sdf"
+file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/ADRB2-4lde_inactive_glide_lib_sorted.sdf"
 
-file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_active_docking_lib_sorted_strain.csv"
-file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_inactive_docking_lib_sorted_strain.csv"
+file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_active_glide_lib_sorted.csv"
+file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_inactive_glide_lib_sorted.csv"
+
 
 def sdf_to_df(args):
     """
@@ -38,8 +39,8 @@ def sdf_to_df(args):
     file, active_status = args  # Unpack the tuple of arguments
 
     # Create a molecule supplier
-    # mol_supplier = Chem.MultithreadedSDMolSupplier(file, numWriterThreads=8)
-    mol_supplier = Chem.SDMolSupplier(file)
+    mol_supplier = Chem.MultithreadedSDMolSupplier(file, numWriterThreads=8)
+    #mol_supplier = Chem.SDMolSupplier(file)
 
     # Load the molecules and their properties into a list
     molecules = []
