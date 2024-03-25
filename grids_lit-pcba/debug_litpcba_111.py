@@ -1,7 +1,3 @@
-# %% [markdown]
-#  # Imports
-
-# %%
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -13,21 +9,12 @@ from rdkit import Chem
 from matplotlib.cm import viridis
 from matplotlib.colors import Normalize
 
-# %% [markdown]
-#  # Graphing Settings
-
-# %%
 matplotlib.rcdefaults()
 sns.set_style("darkgrid")
 plt.rcParams["figure.dpi"] = 100
 
 pd.set_option("display.max_columns", None)
 
-# %% [markdown]
-#  # Papermill Parameters
-
-# %%
-# title suffix
 title_suffix = "ADRB2-4lde"
 
 # Files we are processing
@@ -37,10 +24,6 @@ file_path_sdf_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_li
 file_path_strain_active = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_active_docking_lib_sorted_strain.csv"
 file_path_strain_decoy = "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/ADRB2/strain/ADRB2-4lde_inactive_docking_lib_sorted_strain.csv"
 
-# %% [markdown]
-#  # Data Processing
-
-# %%
 def sdf_to_df(args):
     """
     Load molecules and their properties from an SDF file into a DataFrame.
@@ -55,7 +38,8 @@ def sdf_to_df(args):
     file, active_status = args  # Unpack the tuple of arguments
 
     # Create a molecule supplier
-    mol_supplier = Chem.MultithreadedSDMolSupplier(file, numWriterThreads=8)
+    # mol_supplier = Chem.MultithreadedSDMolSupplier(file, numWriterThreads=8)
+    mol_supplier = Chem.SDMolSupplier(file)
 
     # Load the molecules and their properties into a list
     molecules = []
@@ -105,7 +89,5 @@ def sdf_to_df(args):
     return df
 
 
-# %%
 active_sdf = sdf_to_df((file_path_sdf_active, "active"))
 decoy_sdf = sdf_to_df((file_path_sdf_decoy, "inactive"))
-
