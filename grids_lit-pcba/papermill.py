@@ -148,35 +148,40 @@ for key, value in parameters_dict.items():
 parameters_list = []
 
 for id in file_id:
-    # set the key to the id and the value to an empty dictionary
     parameters_dict = {}
-    parameters_dict["title_suffix"] = id
+
     parameters_dict["output_notebook"] = os.path.abspath(
         os.path.join("papermill", "notebooks", (id + "_litpcba_papermill.ipynb"))
     )
+    # my mistake was not initalizing the empty dictionary first
+    parameters_dict["parameters"] = {}
+
+    parameters_dict["parameters"]["title_suffix"] = id
 
     for dirpath, dirname, filenames in os.walk("."):
         for filename in filenames:
             if filename.endswith(f"{id}" + "_active_glide_lib_sorted.sdf"):
-                parameters_dict["file_path_sdf_active"] = os.path.abspath(filename)
-            if filename.endswith(f"{id}" + "_inactive_glide_lib_sorted.sdf"):
-                parameters_dict["file_path_sdf_inactive"] = os.path.abspath(
+                parameters_dict["parameters"]["file_path_sdf_active"] = os.path.abspath(
                     filename
                 )
+            if filename.endswith(f"{id}" + "_inactive_glide_lib_sorted.sdf"):
+                parameters_dict["parameters"]["file_path_sdf_decoy"] = (
+                    os.path.abspath(filename)
+                )
             if filename.endswith(f"{id}" + "_active_glide_lib_sorted.csv"):
-                parameters_dict["file_path_strain_active"] = os.path.abspath(
-                    os.path.join("strain", filename)
+                parameters_dict["parameters"]["file_path_strain_active"] = (
+                    os.path.abspath(os.path.join("strain", filename))
                 )
             if filename.endswith(f"{id}" + "_inactive_glide_lib_sorted.csv"):
-                parameters_dict["file_path_strain_inactive:"] = os.path.abspath(
-                    os.path.join("strain", filename)
+                parameters_dict["parameters"]["file_path_strain_decoy"] = (
+                    os.path.abspath(os.path.join("strain", filename))
                 )
     # print(parameters_dict)
     # print("\n")
     parameters_list.append(parameters_dict)
-print(parameters_list)
+pprint.pprint(parameters_list)
 print(len(parameters_list))
-print(parameters_list[0])
+# print(parameters_list[0])
 # %%
 
 for parameter_key, parameter_value in parameters_dict.items():
