@@ -5,50 +5,10 @@ import pprint
 import pandas as pd
 
 # %%
-# vs code is so fucking dumb
-# have to remove the following code later
-os.chdir("/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba")
-
 print(os.getcwd())
 
 # %%
 pm.inspect_notebook("litpcba_papermill.ipynb")
-
-
-# %%
-# # execute_notebook(<input notebook>, <output notebook>, <dictionary of parameters>)
-
-# pm.execute_notebook(
-#     "gpcr_papermill.ipynb",
-#     "./papermill/notebooks/gpcr_papermill_output.ipynb",
-#     parameters={
-#         "title_suffix": "GPR40",
-#         "file_path_sdf_active": "./GPR40/docking/GPR40_active_docking_lib_sorted.sdf",
-#         "file_path_sdf_decoy": "./GPR40/docking/GPR40_decoy_docking_lib_sorted.sdf",
-#         "file_path_strain_active": "./GPR40/strain/GPR40_active_docking_lib_sorted.csv",
-#         "file_path_strain_decoy": "./GPR40/strain/GPR40_decoy_docking_lib_sorted.csv",
-#     },
-# )
-
-
-# %%
-# parameters = {
-#     "title_suffix": "GPR40",
-#     "file_path_sdf_active": "./GPR40/docking/GPR40_active_docking_lib_sorted.sdf",
-#     "file_path_sdf_decoy": "./GPR40/docking/GPR40_decoy_docking_lib_sorted.sdf",
-#     "file_path_strain_active": "./GPR40/strain/GPR40_active_docking_lib_sorted.csv",
-#     "file_path_strain_decoy": "./GPR40/strain/GPR40_decoy_docking_lib_sorted.csv",
-# }
-
-# output_notebook = (
-#     f"./papermill/notebooks/gpcr_papermill_output_{parameters['title_suffix']}.ipynb"
-# )
-
-# pm.execute_notebook(
-#     "gpcr_papermill.ipynb",
-#     output_notebook,
-#     parameters=parameters,
-# )
 
 # %%
 best_res_lit_pcba = pd.read_csv("best_res_lit_pcba.csv")
