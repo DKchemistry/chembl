@@ -148,12 +148,24 @@ plt.xlabel("deltaEF5%")
 plt.ylabel("Protein")
 
 plt.show()
+# %%
+
+# filter the data for strain energy cut off of 6.0
+cutoff_6_data = data[data["Strain Energy Cutoff"] == "6.0"]
+
+# Create a bar plot of Delta Linear Log10 AUC (x10) for each protein at cutoff 6
+plt.figure(figsize=(10, 8))
+sns.barplot(x="Delta Linear Log10 AUC (x10)", y="Protein", data=cutoff_6_data, ci=None)
+plt.title("Delta Linear Log10 AUC (x10) for Each Protein at Strain Energy Cutoff 6")
+plt.xlabel("Delta Linear Log10 AUC (x10)")
+plt.ylabel("Protein")
+
 
 # %%
 # filter the data for strain energy cut off of 7.0
 cutoff_7_data = data[data["Strain Energy Cutoff"] == "7.0"]
 
-# Create a bar plot of Delta Linear Log10 AUC (x10) for each protein at cutoff 5
+# Create a bar plot of Delta Linear Log10 AUC (x10) for each protein at cutoff 7
 plt.figure(figsize=(10, 8))
 sns.barplot(x="Delta Linear Log10 AUC (x10)", y="Protein", data=cutoff_7_data, ci=None)
 plt.title("Delta Linear Log10 AUC (x10) for Each Protein at Strain Energy Cutoff 7")
