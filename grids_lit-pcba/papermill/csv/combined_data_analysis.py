@@ -9,10 +9,10 @@ sns.set_style("darkgrid")
 # plt.style.context(matplotx.styles.duftify(matplotx.styles.dracula))
 
 # %%
-data = pd.read_csv("./ParetoRankCSV/combined_data_pareto.csv")
-data
-# data = pd.read_csv("combined_data.csv")
-# data.head()
+#data = pd.read_csv("./ParetoRankCSV/combined_data_pareto.csv")
+#data
+data = pd.read_csv("combined_data.csv")
+data.head()
 # %%
 # Grouping the data by 'Strain Energy Cutoff' and calculating the mean of the delta values
 grouped_data = (
@@ -24,7 +24,7 @@ grouped_data = (
 )
 
 # Display the grouped data
-grouped_data
+display(grouped_data)
 
 # %%
 
