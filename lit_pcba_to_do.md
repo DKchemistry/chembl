@@ -1220,7 +1220,7 @@ GBA glide jobs started on Karla.
 
 Cosmos rsync to local started. 
 
-Once both are done, (1) all to local, (2) push to karla, (3) glide sort, (4) strain, fix notebook, execute notebook, summary stats. 
+Once both are done, (1) all to local, (2) push to karla, (3) glide sort, (4) strain, (5) fix notebook, execute notebook, (6) summary stats. 
 
 1. All to local:
 
@@ -1281,3 +1281,42 @@ I should also update `strain_writer.py` to use more portable logic? But it actua
 The bigger issue is that I want to have analytics_env on karla as I will otherwise have portability issues. 
 
 Fixed all the env/execution related issues found so far, executed the script. It is not very fast, waiting on completion, then need a karla -> local rsync. Then ssh papermill set up. 
+
+Local sync: 
+
+```sh
+rsync -avhuzt --checksum --progress "karla:'/mnt/data/dk/work/grids_lit-pcba/'" "/Users/lkv206/work/to_do_projects/chembl_ligands/grids_lit-pcba/"
+```
+
+5. papermill 
+
+The way papermill works (at least my set up) is having a "runner", "template" and "output". The runner acts on template and injects the parameters (e.g. the variables that are going to be changing) into the template. The runner then submits the template for execution, the template has logic for defining the output ipynb. The enrichment analysis code is run in the output files. 
+
+Here is how it works in GPCR-bench-master/
+
+Runner: `GPCR-bench-master/papermill.ipynb`
+
+Template: `GPCR-bench-master/gpcr_papermill.ipynb`
+
+Output: `GPCR-bench-master/papermill/notebooks/gpcr_papermill_output_{title_suffix}.ipynb`
+
+We can use a similar structure for LIT PCBA, but changing the obvious project variable names, and then defining appropriate logic for the PROTEIN-PDBID notation we now have.
+
+Note: Had to do some debugging for the file paths, but have an interactive python window of `litpcba_papermill.py` running. 
+
+New set up for `grids_lit-pcba`
+
+Runner: `grids_lit-pcba/papermill.ipynb`
+
+- Need to update logic. 
+
+Template: `grids_lit-pcba/papermill.ipynb`
+
+Output: what you expect 
+
+Looooooots of debugging. Code seems to be running locally, will rsync to Karla. If it finishes a notebook, I will run all of it on Karla too.
+
+Running on karla, not sure if it's gonna quit on nohup? 
+
+
+
