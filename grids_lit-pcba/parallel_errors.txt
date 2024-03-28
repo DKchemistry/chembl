@@ -1,0 +1,64 @@
+[00:22:47] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:47] ERROR: Could not sanitize molecule ending on line 23369411
+[00:22:47] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:56] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:22:56] ERROR: Could not sanitize molecule ending on line 29665974
+[00:22:56] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:13] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:13] ERROR: Could not sanitize molecule ending on line 42831517
+[00:23:13] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+
+[00:22:22] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:22] ERROR: Could not sanitize molecule ending on line 5293283
+[00:22:22] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:26] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:26] ERROR: Could not sanitize molecule ending on line 7912122
+[00:22:26] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:17] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:17] ERROR: Could not sanitize molecule ending on line 46343706
+[00:23:17] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+
+[00:22:44] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:44] ERROR: Could not sanitize molecule ending on line 21818107
+[00:22:44] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:22] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:22] ERROR: Could not sanitize molecule ending on line 51773208
+[00:23:22] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:25] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:25] ERROR: Could not sanitize molecule ending on line 53847375
+[00:23:25] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+
+[00:22:18] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:22:18] ERROR: Could not sanitize molecule ending on line 2038103
+[00:22:18] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:22:20] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:20] ERROR: Could not sanitize molecule ending on line 3798112
+[00:22:20] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:37] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:22:37] ERROR: Could not sanitize molecule ending on line 17122785
+[00:22:37] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+
+[00:23:18] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:18] ERROR: Could not sanitize molecule ending on line 42907185
+[00:23:18] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:42] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:42] ERROR: Could not sanitize molecule ending on line 61101187
+[00:23:42] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:44] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:44] ERROR: Could not sanitize molecule ending on line 62623443
+[00:23:44] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+
+[00:23:40] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:40] ERROR: Could not sanitize molecule ending on line 64277577
+[00:23:40] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:23:57] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:23:57] ERROR: Could not sanitize molecule ending on line 76537934
+[00:23:57] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:24:03] Explicit valence for atom # 15 N, 4, is greater than permitted
+[00:24:03] ERROR: Could not sanitize molecule ending on line 81129748
+[00:24:03] ERROR: Explicit valence for atom # 15 N, 4, is greater than permitted
+
+[00:22:20] Explicit valence for atom # 13 N, 4, is greater than permitted
+[00:22:20] ERROR: Could not sanitize molecule ending on line 3074825
+[00:22:20] ERROR: Explicit valence for atom # 13 N, 4, is greater than permitted
+
