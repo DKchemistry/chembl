@@ -4,11 +4,23 @@ import os
 import pprint
 import pandas as pd
 
+from ploomber import DAG
+from ploomber.products import File
+from ploomber.tasks import NotebookRunner
+from ploomber.executors import Parallel
+from pathlib import Path
+
+# %%
+
+SOURCE_NOTEBOOK = os.path.abspath("litpcba_papermill.ipynb")
+print(SOURCE_NOTEBOOK)
+
 # %%
 print(os.getcwd())
 
+
 # %%
-pm.inspect_notebook("litpcba_papermill.ipynb")
+pm.inspect_notebook(SOURCE_NOTEBOOK)
 
 # %%
 best_res_lit_pcba = pd.read_csv("best_res_lit_pcba.csv")
@@ -46,7 +58,7 @@ for id in file_id:
     parameters_dict = {}
     # Construct the path for output_notebook relative to base_path
     parameters_dict["output_notebook"] = os.path.join(
-        base_path, "papermill", "notebooks", (id + "_litpcba_papermill.ipynb")
+        base_path, "ploomer_output", "notebooks", (id + "_litpcba_ploomer.ipynb")
     )
     parameters_dict["parameters"] = {}
     parameters_dict["parameters"]["title_suffix"] = id
@@ -80,45 +92,25 @@ print(len(parameters_list))
 # %%
 
 for params in parameters_list:
-    print("litpcba_papermill.ipynb", params["output_notebook"], params["parameters"])
-    # pm.execute_notebook("litpcba_papermill.ipynb", parameter_value["output_notebook"], parameter_value)
+    print(SOURCE_NOTEBOOK, params["output_notebook"], params["parameters"])
 
 # %%
+# Define your DAG with a Parallel executor for parallel execution
+dag = DAG(executor=Parallel())
 
-# %%
+for params in parameters_list:
+    output_notebook_path = params["output_notebook"]
 
-# # Get a list of all subfolders in the current working directory that start with a capital letter
-# subfolders = [f.name for f in os.scandir(".") if f.is_dir() and f.name[0].isupper()]
+    # Setup a task for running the notebook
+    # Note: No need to specify 'papermill_params' or 'engine_name'
+    NotebookRunner(
+        Path(SOURCE_NOTEBOOK),
+        File(output_notebook_path),
+        dag=dag,
+        params=params["parameters"],
+    )
 
-# parameters_list = []
+if __name__ == "__main__":
+    dag.build(force=True)
 
-# # Create a parameters dictionary for each subfolder
-# for subfolder in subfolders:
-#     parameters = {
-#         "title_suffix": subfolder,
-#         "file_path_sdf_active": f"./{subfolder}/docking/{subfolder}_active_docking_lib_sorted.sdf",
-#         "file_path_sdf_decoy": f"./{subfolder}/docking/{subfolder}_decoy_docking_lib_sorted.sdf",
-#         "file_path_strain_active": f"./{subfolder}/strain/{subfolder}_active_docking_lib_sorted.csv",
-#         "file_path_strain_decoy": f"./{subfolder}/strain/{subfolder}_decoy_docking_lib_sorted.csv",
-#     }
-
-#     output_notebook = f"./papermill/notebooks/gpcr_papermill_output_{parameters['title_suffix']}.ipynb"
-
-#     parameters_list.append(
-#         {
-#             "output_notebook": output_notebook,
-#             "parameters": parameters,
-#         }
-#     )
-
-
-# pprint.pprint(parameters_list)
-
-# # Execute the notebook for each set of parameters
-# for params in parameters_list:
-#     pm.execute_notebook(
-#         "gpcr_papermill.ipynb",
-#         params["output_notebook"],
-#         parameters=params["parameters"],
-#     )
 # %%
