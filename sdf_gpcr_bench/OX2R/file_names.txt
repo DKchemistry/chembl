@@ -1,4 +1,0 @@
-OX2R.zip
-OX2R_chembl19_set_active.smi
-OX2R_chembl19_set.smi
-OX2R_chembl19_set_decoy.smi

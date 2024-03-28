@@ -1,8 +1,0 @@
-GRIDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/ADRB2/ADRB2.zip
-LIGANDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/ADRB2/ADRB2_chembl19_set_active.smi
-POSE_OUTTYPE ligandlib_sd
-DOCKING_METHOD confgen
-PRECISION SP
-AMIDE_MODE penal
-SAMPLE_RINGS True
-EPIK_PENALTIES True

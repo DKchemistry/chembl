@@ -1,4 +1,0 @@
-AA2AR.zip
-AA2AR_chembl19_set_decoy.smi
-AA2AR_chembl19_set_active.smi
-AA2AR_chembl19_set.smi

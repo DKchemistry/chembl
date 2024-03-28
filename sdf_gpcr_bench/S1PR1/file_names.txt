@@ -1,4 +1,0 @@
-S1PR1.zip
-S1PR1_chembl19_set_active.smi
-S1PR1_chembl19_set.smi
-S1PR1_chembl19_set_decoy.smi

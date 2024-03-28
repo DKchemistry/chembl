@@ -1,4 +1,0 @@
-OPRX.zip
-OPRX_chembl19_set_decoy.smi
-OPRX_chembl19_set.smi
-OPRX_chembl19_set_active.smi

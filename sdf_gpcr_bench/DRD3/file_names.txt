@@ -1,4 +1,0 @@
-DRD3.zip
-DRD3_chembl19_set.smi
-DRD3_chembl19_set_active.smi
-DRD3_chembl19_set_decoy.smi

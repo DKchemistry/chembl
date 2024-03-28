@@ -1,4 +1,0 @@
-5HT1B.zip
-5HT1B_chembl19_set.smi
-5HT1B_chembl19_set_active.smi
-5HT1B_chembl19_set_decoy.smi

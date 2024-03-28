@@ -1,4 +1,0 @@
-CRFR1.zip
-CRFR1_chembl19_set_active.smi
-CRFR1_chembl19_set_decoy.smi
-CRFR1_chembl19_set.smi

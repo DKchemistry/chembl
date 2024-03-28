@@ -1,8 +1,0 @@
-GRIDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/AA2AR/AA2AR.zip
-LIGANDFILE /Users/lkv206/work/to_do_projects/chembl_ligands/sdf_gpcr_bench/AA2AR/AA2AR_chembl19_set_decoy.smi
-POSE_OUTTYPE ligandlib_sd
-DOCKING_METHOD confgen
-PRECISION SP
-AMIDE_MODE penal
-SAMPLE_RINGS True
-EPIK_PENALTIES True

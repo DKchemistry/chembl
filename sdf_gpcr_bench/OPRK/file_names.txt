@@ -1,4 +1,0 @@
-OPRK.zip
-OPRK_chembl19_set_active.smi
-OPRK_chembl19_set.smi
-OPRK_chembl19_set_decoy.smi

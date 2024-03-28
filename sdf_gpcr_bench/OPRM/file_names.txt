@@ -1,4 +1,0 @@
-OPRM.zip
-OPRM_chembl19_set.smi
-OPRM_chembl19_set_active.smi
-OPRM_chembl19_set_decoy.smi
