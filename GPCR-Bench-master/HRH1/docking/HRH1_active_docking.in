@@ -1,8 +1,0 @@
-GRIDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/HRH1/HRH1.zip
-LIGANDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/HRH1/stereochemistry/HRH1_chembl19_set_active.sdf
-POSE_OUTTYPE ligandlib_sd
-DOCKING_METHOD confgen
-PRECISION SP
-AMIDE_MODE penal
-SAMPLE_RINGS True
-EPIK_PENALTIES True
