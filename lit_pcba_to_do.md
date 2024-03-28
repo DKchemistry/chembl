@@ -1310,7 +1310,7 @@ Runner: `grids_lit-pcba/papermill.ipynb`
 
 - Need to update logic. 
 
-Template: `grids_lit-pcba/papermill.ipynb`
+Template: `grids_lit-pcba/litpcba_papermill.ipynb`
 
 Output: what you expect 
 
@@ -1318,5 +1318,118 @@ Looooooots of debugging. Code seems to be running locally, will rsync to Karla. 
 
 Running on karla, not sure if it's gonna quit on nohup? 
 
+Execution on Karla is very slow... Not sure what's going on there. 
+
+6. Summary Statistics 
+
+I am really suspicious about just the paperill output because performance is really low. Did I prepare the grids correctly via the automated workflow? How does my performance compare to the paper? For now, let's get the summary stats going. 
+
+Step 1 (from GPCR-bench) was `papermill/csv/combine_data.ipynb` to make `papermill/csv/combined_data.csv`
+
+Step 2: `GPCR-Bench-master/papermill/combined_data_analysis.py`
+
+Ran this all for `grids_lit-pcba` as well (same naming convention). Had to delete erroneous data that was generated prior to updated the title_suffix convention to use a hyphen (`-`). Should delete on Karla as well, just in case. 
+
+@Karla:
+
+```sh
+fd --glob "*ADRB2*
+```
+
+```sh
+csv/strain_enrichment_metrics_ADRB2-4lde.csv
+csv/strain_enrichment_metrics_pareto_ADRB2-4lde.csv
+csv/strain_log_aucs_ADRB2-4lde.csv
+csv/strain_log_aucs_pareto_ADRB2-4lde.csv
+csv/strain_roc_metrics_ADRB2-4lde.csv
+csv/strain_roc_metrics_pareto_ADRB2-4lde.csv
+notebooks/ADRB2-4lde_litpcba_papermill.ipynb
+```
+
+Looks good, deletes are done. 
+
+I should write up the data or simply make the plots look nicer when possible. 
+
+However, data seems to imply a cut off of 6 or so is good. This is pretty similar the GPCR-bench data as well. 
+
+Next steps: 
+
+Double check docking
+Cheminformatics type analysis
+Deep Docking 
+
+All are valid workflows. Only docking double check will be done here. 
+
+## Docking Check:
+
+Unfortunately, need to unzip the files to load the receptor. 
+
+I loaded all the required files into a Maestro project file:
+
+`grids_lit-pcba/docking_complexes/all_complexes_actives.prj`
+
+It is fighting with me over permissions to export it as a sdfgz. Need to be connected to the VPN. 
+
+The complexes are exported now. 
+
+`grids_lit-pcba/docking_complexes/all_complexes_actives.sdfgz`
+
+I guess the most practical analysis is visual comparison. I don't think it's going to be very straight forward. 
+
+Co-Crystal Binding Pocket: Do they mostly overlap with top score active? 
+
+ADRB2-4lde: Yes
+
+ALDH1-5l2m: Yes
+- I don't know where the mix up happened, but *5l2m* is the correct PDB for this complex. THe structure I used is correct, the binding site overlaps. Just becareful later.
+
+ESR1ago-2qzo: Yes
+- Note this structure is a dimer with some disconnected loops that look like additional ligands, but I still have the correct assignment. 
+
+ESR1ant-2iog: Yes
+- Note that looks like a hard pocket, active would need to form a "V" shape (think o/m subsitution, cis-alkene) to fit.
+
+FEN1-5fv7: Yes
+- While the grid is definitely in the correct location, the overlap of the top scoring active and cocrystal is not great. The scores of the actives in general are pretty bad. However, it seems very unlikely that the grid itself was prepared incorrectly. 
+
+GBA-2v3d: Yes
+- Also a dimer. Clearly a challenging pocket I would say. We are however docking to the correct location, very strong overlap. 
+
+IDH1-4umx: Yes 
+
+KAT2A-5mlj: Yes 
+- Dimer 
+
+MAPK1-4zzn: Yes
+- This exercise is really leading me to believe in the "unhappy water hypothesis", I feel like a lot of these systems are not accounting for them, but I can't be sure they are relevant. 
+
+MTORC1-4dri: Yes
+- Yeah it's definitely the right spot but the binding pocket FK506! It's the rapamyacin thing that Schreiber is famous for. The brief actives I looked at are not marcocycles like the cocrystal ligand is. I have to imagine the strain here is huge, and it would be in the actives as well. 
+
+OPRK1-6b73: Yes 
+
+I am also unsurprised here. Opiates are weird. Though I guess fentanyl exists so you can capture the pharmacophore without really needing the bicyclic rings. 
+
+PKM2-3gr4: Yes
+- Yeah these waters are perflectly happy being displaced. Weird structure though. The ligands remind me of my project. 
+
+PPARG-3b1m: Yes
+
+TP53-3zm3: Yes
+
+VDR-3a2j
+
+All of them passed. Yes!
+
+Now I want to clean up the directory to make this project easier to read. 
+
+Some deletions are trivial, others maybe less so. I am going to cp v2_GPCR bench to GPCR bench.
+
+I actually need to mv. Do I need the old GPCR-bench-master? probably not. The only real advantage is that I have the ParetoRanks data (at best). I have my back up just in case anyway so let's just move it. 
+
+
+
+
+## Summary and Notes:
 
 
