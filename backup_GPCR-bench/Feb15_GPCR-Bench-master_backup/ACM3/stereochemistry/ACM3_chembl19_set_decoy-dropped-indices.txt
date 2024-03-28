@@ -1,2 +1,0 @@
-cgx: 6300
-smiconvert_in: 1
