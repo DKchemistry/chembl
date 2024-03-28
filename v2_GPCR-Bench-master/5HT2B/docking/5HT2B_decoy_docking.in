@@ -1,8 +1,0 @@
-GRIDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/5HT2B/5HT2B.zip
-LIGANDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/5HT2B/stereochemistry/5HT2B_chembl19_set_decoy.sdf
-POSE_OUTTYPE ligandlib_sd
-DOCKING_METHOD confgen
-PRECISION SP
-AMIDE_MODE penal
-SAMPLE_RINGS True
-EPIK_PENALTIES True
