@@ -1,0 +1,331 @@
+STDOUT:
+REPORT OF BEST 9 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ESR1ago/ESR1ago-2qzo_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 34 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/PPARG/PPARG-3b1m_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 33 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ADRB2/ADRB2-4lde_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 32 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/OPRK1/OPRK1-6b73_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 61 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/IDH1/IDH1-4umx_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 129 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/MTORC1/MTORC1-4dri_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 153 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/TP53/TP53-3zme_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 133 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ESR1ant/ESR1ant-2iog_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 221 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/GBA/GBA-2v3d_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 286 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/KAT2A/KAT2A-5mlj_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 399 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/MAPK1/MAPK1-4zzn_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 632 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/FEN1/FEN1-5fv7_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 633 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/PKM2/PKM2-3gr4_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 1192 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/VDR/VDR-3a2j_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 5877 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/TP53/TP53-3zme_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 7070 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ESR1ago/ESR1ago-2qzo_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 7232 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ESR1ant/ESR1ant-2iog_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 7511 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/PPARG/PPARG-3b1m_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 11427 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ALDH1/ALDH1-5l2m_active_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 41016 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/MTORC1/MTORC1-4dri_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 104929 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/IDH1/IDH1-4umx_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 109933 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/MAPK1/MAPK1-4zzn_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 226155 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ALDH1/ALDH1-5l2m_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 378233 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/PKM2/PKM2-3gr4_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 415801 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/OPRK1/OPRK1-6b73_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 461132 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/ADRB2/ADRB2-4lde_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 471028 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/GBA/GBA-2v3d_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 521331 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/VDR/VDR-3a2j_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 532065 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/KAT2A/KAT2A-5mlj_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
+REPORT OF BEST 554033 POSES
+
+The sorted ligand structures were written to the file
+/mnt/data/dk/work/grids_lit-pcba/FEN1/FEN1-5fv7_inactive_glide_lib_sorted.sdf
+
+Final rankings based on original docking score
+0 poses were rejected by the energy filters,
+    Coul+vdw Energy <=     0.0    Hbond Interaction <=     0.0    Metal Interaction <=    10.0    GlideScore <=   100.0
+(If any of the above properties is not defined for a given pose,
+the corresponding filter is not applied to that pose.)
+
