@@ -1,0 +1,8 @@
+GRIDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/CXCR4/CXCR4.zip
+LIGANDFILE /mnt/data/dk/work/gpcr_bench/GPCR-Bench-master/CXCR4/stereochemistry/CXCR4_chembl19_set_decoy.sdf
+POSE_OUTTYPE ligandlib_sd
+DOCKING_METHOD confgen
+PRECISION SP
+AMIDE_MODE penal
+SAMPLE_RINGS True
+EPIK_PENALTIES True
