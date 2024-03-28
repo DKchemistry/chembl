@@ -1,4 +1,0 @@
-HRH1.zip
-HRH1_chembl19_set_decoy.smi
-HRH1_chembl19_set.smi
-HRH1_chembl19_set_active.smi

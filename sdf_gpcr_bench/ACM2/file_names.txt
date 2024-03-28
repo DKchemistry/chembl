@@ -1,4 +1,0 @@
-ACM2.zip
-ACM2_chembl19_set_decoy.smi
-ACM2_chembl19_set_active.smi
-ACM2_chembl19_set.smi

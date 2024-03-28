@@ -1,4 +1,0 @@
-CXCR4.zip
-CXCR4_chembl19_set_active.smi
-CXCR4_chembl19_set.smi
-CXCR4_chembl19_set_decoy.smi

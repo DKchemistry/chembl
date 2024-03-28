@@ -1,4 +1,0 @@
-ADRB2.zip
-ADRB2_chembl19_set.smi
-ADRB2_chembl19_set_active.smi
-ADRB2_chembl19_set_decoy.smi
