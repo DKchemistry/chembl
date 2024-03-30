@@ -116,6 +116,8 @@ python scripts_1/extracting_smiles.py -pt $protein -fp $file_path -it $1 -smd $s
 
 Let's start with:
 
+#### `molecular_file_count_updated.py`
+
 ```sh
 python scripts_1/molecular_file_count_updated.py -pt $protein -it $1 -cdd $pred_directory -t_pos $t_cpu -t_samp $to_d
 ```
@@ -230,6 +232,7 @@ All are set from the information we pass in `phase 1.sh`. Importantly, `t_samp` 
    - Thus, we get a list of tuples, where each tuple is the line count and file name for a given file. 
 
 3. **Result Compilation and Saving**:
+
    - The molecule counts and file names are written to a CSV file (`data_directory + '/Mol_ct_file_' + protein + '.csv'`). The code uses `%s` to format the string with the `protein` variable, but it can be written in other ways. 
 
    - This CSV file is then read into a pandas DataFrame, indicating there is no header, and then writing the header next:
@@ -246,4 +249,837 @@ All are set from the information we pass in `phase 1.sh`. Importantly, `t_samp` 
 
    To me, it is confusing to say that it is `Sample_per_million` when it is really trying to say that this is the proportion of molecules to sample from each file.  
    
-   - An updated CSV file (`Mol_ct_file_updated_[project_name].csv`) is saved, including the original counts and the calculated sample sizes per million molecules.
+   - An updated CSV file (`Mol_ct_file_updated_[project_name].csv`) is saved, including the original counts and the calculated sample sizes per million molecules (or more plainly the proportion to be sampled from the file in question).
+
+So keep in mind, two files are written when this script is run: 
+- `data_directory/Mol_ct_file_[project_name].csv`: The original file with the molecule counts and file names.
+- `data_directory/Mol_ct_file_updated_[project_name].csv`: The updated file with the molecule counts, file names, and sample sizes per million molecules.  
+
+And remember as well that `data_directory/` is the `pred_directory` variable we set in `phase_1.sh` and that will update as we move through iterations. 
+
+Now we can get to `sampling.py` which is the next script called in `phase_1.sh`. 
+
+#### `sampling.py`
+
+```sh
+python scripts_1/sampling.py -pt $protein -fp $file_path -it $1 -dd $pred_directory -t_pos $t_cpu -tr_sz $mol_to_dock -vl_sz $n_mol
+```
+
+```py
+from contextlib import closing
+from multiprocessing import Pool
+import pandas as pd
+import numpy as np
+import argparse
+import glob
+import time
+import os
+
+try:
+    import __builtin__
+except ImportError:
+    # Python 3
+    import builtins as __builtin__
+
+# For debugging purposes only:
+def print(*args, **kwargs):
+    __builtin__.print('\t sampling: ', end="")
+    return __builtin__.print(*args, **kwargs)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-pt', '--project_name',required=True,help='Name of the DD project')
+parser.add_argument('-fp', '--file_path',required=True,help='Path to the project directory, excluding project directory name')
+parser.add_argument('-it', '--n_iteration',required=True,help='Number of current iteration')
+parser.add_argument('-dd', '--data_directory',required=True,help='Path to directory containing the remaining molecules of the database; if first iteration, path to Morgan fingerprints of the database, if other iteration path to morgan_1024_predictions folder of the previous iteration')
+parser.add_argument('-t_pos', '--tot_process',required=True,help='Number of CPUs to use for multiprocessing')
+parser.add_argument('-tr_sz', '--train_size',required=True,help='Size of training set')
+parser.add_argument('-vl_sz', '--val_size',required=True,help='Size of validation and test set')
+io_args = parser.parse_args()
+
+protein = io_args.project_name
+file_path = io_args.file_path
+n_it = int(io_args.n_iteration)
+data_directory = io_args.data_directory
+tot_process = int(io_args.tot_process)
+tr_sz = int(io_args.train_size)
+vl_sz = int(io_args.val_size)
+rt_sz = tr_sz/vl_sz
+
+print("Parsed Args:")
+print(" - Iteration:", n_it)
+print(" - Data Directory:", data_directory)
+print(" - Training Size:", tr_sz)
+print(" - Validation Size:", vl_sz)
+
+
+def train_valid_test(file_name):
+    sampling_start_time = time.time()
+    f_name = file_name.split('/')[-1]
+    mol_ct = pd.read_csv(data_directory+"/Mol_ct_file_updated_%s.csv"%protein, index_col=1)
+    if n_it == 1:
+        to_sample = int(mol_ct.loc[f_name].Sample_for_million/(rt_sz+2))
+    else:
+        to_sample = int(mol_ct.loc[f_name].Sample_for_million/3)
+
+    total_len = int(mol_ct.loc[f_name].Number_of_Molecules)
+    shuffle_array = np.linspace(0, total_len-1, total_len)
+    seed = np.random.randint(0, 2**32)
+    np.random.seed(seed=seed)
+    np.random.shuffle(shuffle_array)
+
+    if n_it == 1:
+        train_ind = shuffle_array[:int(rt_sz*to_sample)]
+        valid_ind = shuffle_array[int(to_sample*rt_sz):int(to_sample*(rt_sz+1))]
+        test_ind = shuffle_array[int(to_sample*(rt_sz+1)):int(to_sample*(rt_sz+2))]
+    else:
+        train_ind = shuffle_array[:to_sample]
+        valid_ind = shuffle_array[to_sample:to_sample*2]
+        test_ind = shuffle_array[to_sample*2:to_sample*3]
+
+    train_ind_dict = {}
+    valid_ind_dict = {}
+    test_ind_dict = {}
+
+    train_set = open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/train_set.txt", 'a')
+    test_set = open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/test_set.txt", 'a')
+    valid_set = open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/valid_set.txt", 'a')
+
+    for i in train_ind:
+        train_ind_dict[i] = 1
+    for j in valid_ind:
+        valid_ind_dict[j] = 1
+    for k in test_ind:
+        test_ind_dict[k] = 1
+
+    # Opens the file and write the test, train, and valid files
+    with open(file_name, 'r') as ref:
+        for ind, line in enumerate(ref):
+            molecule_id = line.strip().split(',')[0]
+            if ind == 1:
+                print("molecule_id:", molecule_id)
+
+            # now we write to the train, test, and validation sets
+            if ind in train_ind_dict.keys():
+                train_set.write(molecule_id + '\n')
+            elif ind in valid_ind_dict.keys():
+                valid_set.write(molecule_id + '\n')
+            elif ind in test_ind_dict.keys():
+                test_set.write(molecule_id + '\n')
+
+    train_set.close()
+    valid_set.close()
+    test_set.close()
+    print("Process finished sampling in " + str(time.time()-sampling_start_time))
+
+if __name__ == '__main__':
+    try:
+        os.mkdir(file_path+'/'+protein+"/iteration_"+str(n_it))
+    except OSError:
+        pass
+
+    f_names = []
+    for f in glob.glob(data_directory+'/*.txt'):
+        f_names.append(f)
+
+    t = time.time()
+    print("Starting Processes...")
+    with closing(Pool(np.min([tot_process, len(f_names)]))) as pool:
+        pool.map(train_valid_test, f_names)
+
+    print("Compressing smile file...")
+    print("Sampling Complete - Total Time Taken:", time.time()-t)
+```
+#### Debugging Print Function
+It overrides the built-in `print` function for debugging, prefixing output with "\t sampling: " to differentiate script output from other messages.
+
+#### Argument Parsing
+The seven required command-line arguments:
+- **project_name** (`-pt`): Name of the DD project.
+- **file_path** (`-fp`): Path to the project directory, excluding project directory name. This is the `file_path` variable we set in `phase_1.sh`.
+- **n_iteration** (`-it`): The current iteration number of the DD process. This is the `$1` variable we set in `phase_1.sh`.
+- **data_directory** (`-dd`): The path to the directory containing molecule database files. This is the `pred_directory` variable we set in `phase_1.sh`.
+- **tot_process** (`-t_pos`): The number of CPUs to use for multiprocessing. This is the `$t_cpu` variable we set in `phase_1.sh`.
+- **train_size** (`-tr_sz`): The size of the training set. This is the `$mol_to_dock` variable we set in `phase_1.sh`.
+- **val_size** (`-vl_sz`): The size of the validation and test sets. This is the `$n_mol` variable we set in `phase_1.sh`.
+
+Let's remind ourselves about the difference between `$mol_to_dock` and `$n_mol`:
+
+- `$mol_to_dock` (used for *training set* size): comes from the arguments set in the phase_1.sh execution: 
+
+    `mol_to_dock=$5`
+
+    This is the number of molecules to sample from the database for the current iteration. Part of the elegance here is that when you call phase_1.sh, the fifth argument is *just* setting the training size, meaning you can make this any number you want in subsequent iterations (typically in the first they would be equal to what you have in line 8 of the `logs.txt`, but you don't *have* to do that). 
+
+- `$n_mol` (used for *validation and test set* size): comes from the `logs.txt` file:
+
+    `n_mol=`sed -n '8p' $3/$4/logs.txt`
+    
+    Then the actual amount we will dock will include 2x n_mol (since we need validation and test to be indentical in size) and mol_to_dock if we are in iteration 1, but otherwise we will just be adding to our training set size. See below:
+
+    ```sh
+    if [ $1 == 1 ]
+    then 
+        to_d=$((n_mol+n_mol+mol_to_dock))
+    else
+        to_d=$mol_to_dock
+    fi
+    ```
+
+Now, let's return to the python script. After the imports and print debugging function, we get to the main function we will end up using with `multiprocessing`:
+```py
+def train_valid_test(file_name):
+    sampling_start_time = time.time()
+    f_name = file_name.split('/')[-1]
+    mol_ct = pd.read_csv(data_directory+"/Mol_ct_file_updated_%s.csv"%protein, index_col=1)
+    if n_it == 1:
+        to_sample = int(mol_ct.loc[f_name].Sample_for_million/(rt_sz+2))
+    else:
+        to_sample = int(mol_ct.loc[f_name].Sample_for_million/3)
+```
+
+This function is called for each file in the `f_names` list, which is created (later in the script) by `glob.glob` to find all `.txt` files in the specified data directory. This is the reason why I often had issues getting files to properly parse, because I'd have `.smi` files in the directory and not `.txt` files.
+
+We get f_name by splitting the file name on the `/` character and taking the last element of the resulting list. This is the file name without the path. This could probably be done more elegantly with `os.path.basename` but this works. 
+
+Next, we read in the `Mol_ct_file_updated_[project_name].csv` file we created in `molecular_file_count_updated.py` and set the index to the file name. This is important because we will be using the file name to look up the number of molecules to sample from the file via the `loc` method (`mol_ct.loc[f_name].Sample_for_million`). I have not seen this before, but this is a clever way to get the value we want, which is the "sample proportion" (called Sample_for_million) from the file we are currently processing. 
+
+If we are in iteration 1, we set `to_sample` as the sample proportion dividided `rt_sz`, which is defined as `rt_sz = tr_sz/vl_sz`.
+
+```py
+    total_len = int(mol_ct.loc[f_name].Number_of_Molecules)
+    shuffle_array = np.linspace(0, total_len-1, total_len)
+    seed = np.random.randint(0, 2**32)
+    np.random.seed(seed=seed)
+    np.random.shuffle(shuffle_array)
+```
+I think it's helpful to see what these files look like in an example before I continue explaining the code to myself. Let's use my 3_EnamineDiverse project as an example. In `interation_1/morgan_1024_predictions/` I have: 
+
+```sh
+Mol_ct_file_3_EnamineDiverse.csv
+Mol_ct_file_updated_3_EnamineDiverse.csv
+part_00_smiles.txt
+...
+part_27_smiles.txt
+passed_file_ct.txt
+```
+We are looking at: `Mol_ct_file_updated_3_EnamineDiverse.csv` right now. 
+
+It looks like this: 
+
+```py
+Number_of_Molecules,file_name,Sample_for_million
+14143753,part_10_smiles.txt,213671
+```
+NOTE: You write 'back in time' here, so Iteration_1/morgan_1024_predictions/Mol_ct_updated_3_EnamineDiverse.csv is writen during phase_1.sh in *iteration 2*. So when I discuss the above file as example, remember the sampling is going to go into iteration 2, not iteration 1. Iteration 1 instead writes to the library data directory. This is most obvious when you `fd` for the file: 
+
+```sh
+fd Mol_ct_file_updated_3_EnamineDiverse.csv
+enamine/rename/enumerate/cat_for_isomer_deletion/enamine_real_28_fp/Mol_ct_file_updated_3_EnamineDiverse.csv
+```
+
+Anyway, the `Mol_ct_file_updated_3_EnamineDiverse.csv` file is created in `molecular_file_count_updated.py` and is read in here. The `f_name` variable is the file name without the path. We use the number of molecules to construct the array that we will then shuffle with a random seed. Relatively straight forward if you get where the paths are going. 
+
+If you're in the first iteration, the bounds of the array are taken from the shuffled array and plit by the `rt_sz` variable. I am still a little unsure of why it is set up this way, but the operation itself makes sense. 
+
+If you're not in the first iteration, then the bounds of the array are taken from the shuffled array and split into three equal parts. 
+
+Regardless of iteration however, you always get a train/valid/test split. It just that in later iterations, all the sets will contribute to making the training set.
+
+Then, the *_set.txt is saved in the iteration_X directory and written.
+
+I find the part with the indices setting hard to follow, so here is one potential answer:
+
+shuffle_array: This is a numpy array that starts as a sequence of integers from 0 to total_len-1. After shuffling, the order of these integers is randomized. For example, if total_len is 5, shuffle_array might start as `[0, 1, 2, 3, 4]` and then become something like `[3, 0, 4, 1, 2]` after shuffling.
+
+train_ind, valid_ind, test_ind: These are slices of the shuffled array, so they are also numpy arrays containing a subset of the integers from 0 to total_len-1, in a random order. For example, if to_sample is 2, train_ind might be `[3, 0]`, valid_ind might be `[4, 1]`, and test_ind might be [2].
+
+train_ind_dict, valid_ind_dict, test_ind_dict: These are dictionaries where the keys are the integers in train_ind, valid_ind, and test_ind, respectively, and the values are all 1. For example, if train_ind is `[3, 0]`, `train_ind_dict` would be `{3: 1, 0: 1}`.
+
+Then, when we act on the file_name (the *.txt files in the prediction directory) we use the index of the file to sample. So using `train_ind_dict` = `{3: 1, 0: 1}`
+
+and a file containing the following, the bold would be written to the train_set.txt file:
+
+[0] **Z1449657345_Isomer1,0.998218834400177**  
+[1] Z2861190319_Isomer1,0.04097618907690048  
+[2] Z2861190319_Isomer2,0.2449219524860382  
+[3] **Z6127089457_Isomer1,0.24301858246326447**  
+[4] Z6127400168_Isomer1,0.7136911153793335  
+
+There's a couple of things here that are a bit confusing. One is that while I originally thought having random seeds per process would cause issues, it doesnt if the `*.txt` files are unique (then any sort of indice issue doesnt matter, you can accidentally write the same line to two different datasets if every line is unique).
+
+The other is that it doesn't seem like you actually need a dictionary. It seems like a dictionary here is arbitrarily set to have key, value = indice, 1; but `1` is constant. This is likely because dictionary membership is faster to check than list membership (for whatever reason), one suggestion I found was to use set() instead, like so: 
+
+```py
+train_ind_set = set(train_ind)
+valid_ind_set = set(valid_ind)
+test_ind_set = set(test_ind)
+
+# ...
+
+if ind in train_ind_set:
+    train_set.write(molecule_id + '\n')
+elif ind in valid_ind_set:
+    valid_set.write(molecule_id + '\n')
+elif ind in test_ind_set:
+    test_set.write(molecule_id + '\n')
+```
+
+I'm not sure if this is faster, but it's a good idea to keep in mind. 
+
+However, now we know this script will sucessfully write the `test_set.txt`, `train_set.txt`, and `valid_set.txt` files. 
+
+Next we will look at the `sanity_check.py` script, which ensures deduplication.
+
+```sh
+python scripts_1/sanity_check.py -pt $protein -fp $file_path -it $1
+```
+```py
+import argparse
+import glob
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-pt','--project_name',required=True,help='Name of project')
+parser.add_argument('-fp','--file_path',required=True,help='Path to project folder without name of project folder')
+parser.add_argument('-it','--n_iteration',required=True,help='Number of current iteration')
+
+io_args = parser.parse_args()
+import time
+
+protein = io_args.project_name
+file_path = io_args.file_path
+n_it = int(io_args.n_iteration)
+
+old_dict = {}
+for i in range(1,n_it):
+    with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(i)+'/training_labels*')[-1]) as ref:
+        ref.readline()
+        for line in ref:
+            tmpp = line.strip().split(',')[-1]
+            old_dict[tmpp] = 1
+    with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(i)+'/validation_labels*')[-1]) as ref:
+        ref.readline()
+        for line in ref:
+            tmpp = line.strip().split(',')[-1]
+            old_dict[tmpp] = 1
+    with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(i)+'/testing_labels*')[-1]) as ref:
+        ref.readline()
+        for line in ref:
+            tmpp = line.strip().split(',')[-1]
+            old_dict[tmpp] = 1
+
+t=time.time()
+new_train = {}
+new_valid = {}
+new_test = {}
+with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(n_it)+'/train_set*')[-1]) as ref:
+    for line in ref:
+        tmpp = line.strip().split(',')[0]
+        new_train[tmpp] = 1
+with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(n_it)+'/valid_set*')[-1]) as ref:
+    for line in ref:
+        tmpp = line.strip().split(',')[0]
+        new_valid[tmpp] = 1
+with open(glob.glob(file_path+'/'+protein+'/iteration_'+str(n_it)+'/test_set*')[-1]) as ref:
+    for line in ref:
+        tmpp = line.strip().split(',')[0]
+        new_test[tmpp] = 1
+print(time.time()-t)
+
+t=time.time()
+for keys in new_train.keys():
+    if keys in new_valid.keys():
+        new_valid.pop(keys)
+    if keys in new_test.keys():
+        new_test.pop(keys)
+for keys in new_valid.keys():
+    if keys in new_test.keys():
+        new_test.pop(keys)
+print(time.time()-t)
+
+for keys in old_dict.keys():
+    if keys in new_train.keys():
+        new_train.pop(keys)
+    if keys in new_valid.keys():
+        new_valid.pop(keys)
+    if keys in new_test.keys():
+        new_test.pop(keys)
+        
+with open(file_path+'/'+protein+'/iteration_'+str(n_it)+'/train_set.txt','w') as ref:
+    for keys in new_train.keys():
+        ref.write(keys+'\n')
+with open(file_path+'/'+protein+'/iteration_'+str(n_it)+'/valid_set.txt','w') as ref:
+    for keys in new_valid.keys():
+        ref.write(keys+'\n')
+with open(file_path+'/'+protein+'/iteration_'+str(n_it)+'/test_set.txt','w') as ref:
+    for keys in new_test.keys():
+        ref.write(keys+'\n')
+```
+
+This script is pretty straight forward. It takes the project name, file path, and iteration number as arguments. Then it creates a dictionary of all the molecules that have been used in previous iterations via the `old_dict` dictionary up to the current iteration via `for i in range(1,n_it)`. 
+
+The extraction logic uses: 
+
+`tmpp = line.strip().split(',')[-1]`
+
+To set the keys of the dictionary to the molecule ID. Notably, we are checking the `*_labels.txt` files, not the `*_set.txt` files when looking to previous iterations.
+
+This is the structure of the `*_labels.txt` files: 
+
+```
+r_i_docking_score,ZINC_ID
+-10.4494,PV-006642569130_Isomer1
+```
+As can be seen, the last element (found via `[-1]`), is responsible for finding the molecule ID.
+
+The "new" keys are then from the `*_set.txt` files. 
+
+We can then use the `pop` method to remove any molecules that are in the `new` dictionaries from the `old` dictionary. This is done for the `train`, `valid`, and `test` dictionaries. 
+
+Finally, the `*_set.txt` files are written with the remaining molecules, ensuring previous labels have not been re-used. 
+
+We can now move on to `extracting_morgan.py`:
+
+### `extracting_morgan.py`
+
+```sh
+python scripts_1/extracting_morgan.py -pt $protein -fp $file_path -it $1 -md $morgan_directory -t_pos $t_cpu
+```
+
+```py
+# Reads the ids found in sampling and finds the corresponding morgan fingerprint
+import argparse
+import glob
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-pt', '--project_name', required=True, help='Name of the DD project')
+parser.add_argument('-fp', '--file_path', required=True, help='Path to the project directory, excluding project directory name')
+parser.add_argument('-it', '--n_iteration', required=True, help='Number of current iteration')
+parser.add_argument('-md', '--morgan_directory', required=True, help='Path to directory containing Morgan fingerprints for the database')
+parser.add_argument('-t_pos', '--tot_process', required=True, help='Number of CPUs to use for multiprocessing')
+
+io_args = parser.parse_args()
+
+import os
+from multiprocessing import Pool
+import time
+from contextlib import closing
+import numpy as np
+
+protein = io_args.project_name
+file_path = io_args.file_path
+n_it = int(io_args.n_iteration)
+morgan_directory = io_args.morgan_directory
+tot_process = int(io_args.tot_process)
+
+
+def extract_morgan(file_name):
+    train = {}
+    test = {}
+    valid = {}
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/train_set.txt", 'r') as ref:
+        for line in ref:
+            train[line.rstrip()] = 0
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/valid_set.txt", 'r') as ref:
+        for line in ref:
+            valid[line.rstrip()] = 0
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/test_set.txt", 'r') as ref:
+        for line in ref:
+            test[line.rstrip()] = 0
+
+    # for file_name in file_names:
+    ref1 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'train_' + file_name.split('/')[-1], 'w')
+    ref2 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'valid_' + file_name.split('/')[-1], 'w')
+    ref3 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'test_' + file_name.split('/')[-1], 'w')
+
+    with open(file_name, 'r') as ref:
+        flag = 0
+        for line in ref:
+            tmpp = line.strip().split(',')[0]
+            if tmpp in train.keys():
+                train[tmpp] += 1
+                fn = 1
+                if train[tmpp] == 1: flag = 1
+            elif tmpp in valid.keys():
+                valid[tmpp] += 1
+                fn = 2
+                if valid[tmpp] == 1: flag = 1
+            elif tmpp in test.keys():
+                test[tmpp] += 1
+                fn = 3
+                if test[tmpp] == 1: flag = 1
+            if flag == 1:
+                if fn == 1:
+                    ref1.write(line)
+                if fn == 2:
+                    ref2.write(line)
+                if fn == 3:
+                    ref3.write(line)
+            flag = 0
+
+
+def alternate_concat(files):
+    to_return = []
+    with open(files, 'r') as ref:
+        for line in ref:
+            to_return.append(line)
+    return to_return
+
+
+def delete_all(files):
+    os.remove(files)
+
+
+def morgan_duplicacy(f_name):
+    flag = 0
+    mol_list = {}
+    ref1 = open(f_name[:-4] + '_updated.csv', 'a')
+    with open(f_name, 'r') as ref:
+        for line in ref:
+            tmpp = line.strip().split(',')[0]
+            if tmpp not in mol_list:
+                mol_list[tmpp] = 1
+                flag = 1
+            if flag == 1:
+                ref1.write(line)
+                flag = 0
+    os.remove(f_name)
+
+
+if __name__ == '__main__':
+    try:
+        os.mkdir(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan')
+    except:
+        pass
+
+    files = []
+    for f in glob.glob(morgan_directory + "/*.txt"):
+        files.append(f)
+
+    t = time.time()
+    with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+        pool.map(extract_morgan, files)
+    print(time.time() - t)
+
+    all_to_delete = []
+    for type_to in ['train', 'valid', 'test']:
+        t = time.time()
+        files = []
+        for f in glob.glob(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + type_to + '*'):
+            files.append(f)
+            all_to_delete.append(f)
+        print(len(files))
+        if len(files) == 0:
+            print("Error in address above")
+            break
+        with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+            to_print = pool.map(alternate_concat, files)
+        with open(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + type_to + '_morgan_1024.csv',
+                  'w') as ref:
+            for file_data in to_print:
+                for line in file_data:
+                    ref.write(line)
+        to_print = []
+        print(type_to, time.time() - t)
+
+    f_names = []
+    for f in glob.glob(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/*morgan*'):
+        f_names.append(f)
+
+    t = time.time()
+    with closing(Pool(np.min([tot_process, len(f_names)]))) as pool:
+        pool.map(morgan_duplicacy, f_names)
+    print(time.time() - t)
+
+    with closing(Pool(np.min([tot_process, len(all_to_delete)]))) as pool:
+        pool.map(delete_all, all_to_delete)
+```
+
+#### Functions: 
+
+We are familiar with imports now, so let's move to function-by-function explanations: 
+
+```py
+def extract_morgan(file_name):
+    train = {}
+    test = {}
+    valid = {}
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/train_set.txt", 'r') as ref:
+        for line in ref:
+            train[line.rstrip()] = 0
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/valid_set.txt", 'r') as ref:
+        for line in ref:
+            valid[line.rstrip()] = 0
+    with open(file_path + '/' + protein + "/iteration_" + str(n_it) + "/test_set.txt", 'r') as ref:
+        for line in ref:
+            test[line.rstrip()] = 0
+```
+Here we parse the `*_set.txt` files into dictionaries. The `rstrip()` method removes the trailing newline character. 
+
+So, if we consider this as the structure of some `*_set.txt` file: 
+
+PV-004170659562_Isomer1
+PV-004170659562_Isomer2
+
+The dictionary would look like this: 
+
+```py
+{
+    "PV-004170659562_Isomer1": 0,
+    "PV-004170659562_Isomer2": 0
+}
+```
+
+The reason for the `rstrip()` method is that otherwise we would include the trailing newline character (`\n` in python).
+
+
+``` py
+    # for file_name in file_names:
+    ref1 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'train_' + file_name.split('/')[-1], 'w')
+    ref2 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'valid_' + file_name.split('/')[-1], 'w')
+    ref3 = open(
+        file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'test_' + file_name.split('/')[-1], 'w')
+```
+
+Here we are using the `file_name` argument that is passed to the `extract_morgan(file_name)` function. In the `main()` function, we call it like so: 
+
+```py
+with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+    pool.map(extract_morgan, files)
+```
+
+So, `file_name` is a file path to a file that contains the morgan fingerprints. They are found like so, also in `main()`:
+
+```py
+files = []
+for f in glob.glob(morgan_directory + "/*.txt"):
+    files.append(f)
+```
+
+The `morgan_directory` variable comes via `argparse` and is defined: 
+
+```py
+parser.add_argument('-md', '--morgan_directory', required=True, help='Path to directory containing Morgan fingerprints for the database')
+```
+So, `morgan_directory` is the path to the directory that contains the morgan fingerprints, which end in `.txt`. It seems like we are going to spawn many `train_`, `valid_`, and `test_` files, as `file_name` is a list of file paths that would look like this: 
+
+```sh
+path/to/morgan_directory/part_00_smiles.txt
+...
+path/to/morgan_directory/part_27_smiles.txt
+```
+So, the `file_name.split('/')[-1]` would look like this: 
+
+```sh
+part_00_smiles.txt
+...
+part_27_smiles.txt
+```
+But, keep in mind, these files are being opened in:
+
+`ref1 = open(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + 'train_' + file_name.split('/')[-1], 'w')`
+
+So this is in the `morgan` directory of the current iteration.
+
+Now the final part of the function:
+
+```py
+    with open(file_name, 'r') as ref:
+        flag = 0
+        for line in ref:
+            tmpp = line.strip().split(',')[0]
+            if tmpp in train.keys():
+                train[tmpp] += 1
+                fn = 1
+                if train[tmpp] == 1: flag = 1
+            elif tmpp in valid.keys():
+                valid[tmpp] += 1
+                fn = 2
+                if valid[tmpp] == 1: flag = 1
+            elif tmpp in test.keys():
+                test[tmpp] += 1
+                fn = 3
+                if test[tmpp] == 1: flag = 1
+            if flag == 1:
+                if fn == 1:
+                    ref1.write(line)
+                if fn == 2:
+                    ref2.write(line)
+                if fn == 3:
+                    ref3.write(line)
+            flag = 0
+```
+We open the `file_name` we've discussed and iterate over it. We are looking for the molecule ID, which is the first element of the line (because it is split by `,`). The `.strip()` is for leading/trailing whitespace. We set a flag to 0 and then check if the molecule ID is in the `train`, `valid`, or `test` dictionaries. If it is, we increment the value of the dictionary by 1. We also set `fn` to 1, 2, or 3 depending on which dictionary it is in. If the value of the dictionary is 1, we set the flag to 1. 
+
+The trick to understanding this is to realize that the entire set of if statements has to run. So, if the molecule ID is in the `train` dictionary, we increment the value by 1, set `fn` to 1, and then check if the value is 1. If it is, we set the flag to 1. Then, we get to if `flag == 1`, which it is if we have a match, then we also know via `fn` which file to write to. Then we reset `flag` to 0 and go to the next line. If it's not matched, then flag is never changed from 0, and therefor, nothing is ever written. If the watch is in a different dictionary, then we just write to the `fn` number it corresponds to. 
+
+The output, presumably, are going to be files that looks like this: 
+
+```sh
+path/to/morgan/directory/train_part_00_smiles.txt
+```
+
+And so on for `valid_`, `test_` prefixes and for the `file_names` we are acting on in `main()`.
+
+We are writing the entire line of `morgan_library_fp.txt` file we are reading to the file, so the output would look like this, using an example I have: 
+
+```sh
+head -n 1 part_00_smiles.txt
+```
+
+```sh
+Z6430701089_Isomer1,3,15,24,33,36,59,64,80,90,123,128,188,197,222,270,282,284,356,367,371,375,389,394,422,441,447,546,547,606,614,650,656,658,689,698,703,726,807,849,854,893,899,926,975,1019,1021
+```
+
+Now, the next steps are likely to appropriately concat these files and remove the the many files we just made that we won't need. There also appears to be a step to check for duplications, though I am not sure why this is necessary. 
+
+Here are the last three functions before we begin using them in `main()`:
+
+```py
+
+def alternate_concat(files):
+    to_return = []
+    with open(files, 'r') as ref:
+        for line in ref:
+            to_return.append(line)
+    return to_return
+
+
+def delete_all(files):
+    os.remove(files)
+
+
+def morgan_duplicacy(f_name):
+    flag = 0
+    mol_list = {}
+    ref1 = open(f_name[:-4] + '_updated.csv', 'a')
+    with open(f_name, 'r') as ref:
+        for line in ref:
+            tmpp = line.strip().split(',')[0]
+            if tmpp not in mol_list:
+                mol_list[tmpp] = 1
+                flag = 1
+            if flag == 1:
+                ref1.write(line)
+                flag = 0
+    os.remove(f_name)
+
+```
+
+The `alternate_concat` function is used to read the files we just made. It is used in `main()` like so: 
+```py
+with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+    to_print = pool.map(alternate_concat, files)
+```
+
+Though I don't really get why? As we seem to overwrite to_print in the next step. 
+
+The `delete_all` function is used to remove the files we just made. It is used in `main()` like so: 
+
+```py
+with closing(Pool(np.min([tot_process, len(all_to_delete)]))) as pool:
+    pool.map(delete_all, all_to_delete)
+```
+And finally, the `morgan_duplicacy` function is used to check for duplications. It is used in `main()` like so: 
+
+```py
+with closing(Pool(np.min([tot_process, len(f_names)]))) as pool:
+    pool.map(morgan_duplicacy, f_names)
+```
+We start with `flag = 0` and an empty dictionary `mol_list`. We are going to strip the file extension from `f_name` via `f_name[:-4]`, add `'_updated.csv'` to it, and open it for appending. Then we open `f_name` and iterate over it. We are looking for the molecule ID, which is the first element of the line (because it is split by `,`). The `.strip()` is for leading/trailing whitespace. We set a flag to 0 and then check if the molecule ID is in the `mol_list` dictionary. If it is not, we add it to the dictionary and set the flag to 1. If the flag is 1, we write the line to the file we opened. Then we reset the flag to 0. This is pretty similar to what we did before. 
+
+The part that is confusing me is what f_name is, because if I expected it to be something like `train_part_00_smiles.txt`, but it is not. It would have to be something like `train.txt` because our output files in `/mnt/data/dk/work/DeepDocking/projects/3_EnamineDiverse/iteration_1/morgan` are: 
+
+```sh
+test_morgan_1024_updated.csv
+train_morgan_1024_updated.csv
+valid_morgan_1024_updated.csv
+```
+Ah, so what's happening is further down in `main()`:
+
+```py
+    all_to_delete = []
+    for type_to in ['train', 'valid', 'test']:
+        t = time.time()
+        files = []
+        for f in glob.glob(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + type_to + '*'):
+            files.append(f)
+            all_to_delete.append(f)
+        print(len(files))
+        if len(files) == 0:
+            print("Error in address above")
+            break
+        with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+            to_print = pool.map(alternate_concat, files)
+        with open(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/' + type_to + '_morgan_1024.csv',
+                  'w') as ref:
+            for file_data in to_print:
+                for line in file_data:
+                    ref.write(line)
+        to_print = []
+        print(type_to, time.time() - t)
+```
+The first part of the code is going to find the `train_`, `test_`, and `valid_` prefixed files we made earlier with `extract_morgan()` using the `glob.glob()` search. 
+
+Then we use `alternate_concat()`. It reads the files we just made (`files = []`) and returns them as a list. So, `to_print` is a list of lists. The first list is the contents of `train_part_00_smiles.txt`, the second list is the contents of `train_part_01_smiles.txt`, and so on. This is why we need this double for loop to write the lines to the file:
+
+```py
+for file_data in to_print:
+    for line in file_data:
+        ref.write(line)
+```
+This is another detail about python's multiprocessing: 
+
+"The `multiprocessing.Pool.map()` function always returns a list. It applies the function you give it to each element in the iterable you pass, and collects the results in a list. The order of the results in the list corresponds to the order of the elements in the input iterable.
+
+So, if alternate_concat returns a list, `pool.map(alternate_concat, files)` will return a list of lists. If `alternate_concat` returned a dictionary, `pool.map(alternate_concat, files)` would return a list of dictionaries.
+
+In other words, `Pool.map()` doesn't change the type of the return value of the function it's applying. It just collects those return values in a list. The type of the elements in that list depends on what the function returns."
+
+Now, I believe we have solved the question from earlier.
+
+```py
+f_names = []
+    for f in glob.glob(file_path + '/' + protein + '/iteration_' + str(n_it) + '/morgan/*morgan*'):
+        f_names.append(f)
+
+    t = time.time()
+    with closing(Pool(np.min([tot_process, len(f_names)]))) as pool:
+        pool.map(morgan_duplicacy, f_names)
+    print(time.time() - t)
+
+    with closing(Pool(np.min([tot_process, len(all_to_delete)]))) as pool:
+        pool.map(delete_all, all_to_delete)
+```
+
+f_names here is going to be a list of files that look like this: 
+
+```sh
+train_morgan_1024.csv
+valid_morgan_1024.csv
+test_morgan_1024.csv
+```
+When we run `morgan_duplicacy()` on these files, we are going to check for duplications in the files we just made, remove them, and append `_updated.csv` to the end of the file name.
+
+We are also going to store the `X_morgan_1024.csv` files in a list and pass them to a `delete_all` function, cleaning up the directory. 
+
+So, the final output of this script is going to be: 
+
+```sh
+train_morgan_1024_updated.csv
+valid_morgan_1024_updated.csv
+test_morgan_1024_updated.csv
+```
+
+Now, we need to extract the smiles to finish phase_1!
+
+### Extracting Smiles
+
+```sh
+python scripts_1/extracting_smiles.py -pt $protein -fp $file_path -it $1 -smd $smile_directory -t_pos $t_cpu
+```
