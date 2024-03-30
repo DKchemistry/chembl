@@ -1213,15 +1213,17 @@ if __name__ == '__main__':
     with open(ITER_PATH + "/test_set.txt", 'r') as ref:
         for line in ref:
             all_test[line.rstrip()] = 0
+    
+    # ? I don't think this does anything either,
+    # all these dictionaires are empty when initalized
+    # for keys in train.keys():
+    #     all_train.pop(keys)
 
-    for keys in train.keys():
-        all_train.pop(keys)
+    # for keys in valid.keys():
+    #     all_valid.pop(keys)
 
-    for keys in valid.keys():
-        all_valid.pop(keys)
-
-    for keys in test.keys():
-        all_test.pop(keys)
+    # for keys in test.keys():
+    #     all_test.pop(keys)
 
     print(len(all_train), len(all_valid), len(all_test))
 
@@ -1273,12 +1275,123 @@ These functions are very similar to `extracting_morgan.py`, which makes lot of s
 
 The `extract_smile()` function is used to extract the smiles from a file to write them to train, test, and valid files for model training. It has some key differences from `extract_morgan()` however, most notably in that it is taking more arguments (perhaps unnessecary complexity).
 
+```py
+def extract_smile(file_name, train, valid, test):
+```
+Which is different from `extract_morgan()`
 
+```py
+def extract_morgan(file_name):
+```
 
-"The extract_smile function takes four arguments: file_name, train, valid, and test. It opens a file with the given file_name, reads each line, and checks if the last element of the line (after splitting by spaces) is in the train, valid, or test dictionaries. If it is, it increments the corresponding count in the dictionary and writes the line to the corresponding file if it's the first occurrence.
+The `extract_smile()` function is used in `main()` like so: 
 
-When you use partial(extract_smile, train=train, valid=valid, test=test), you're creating a new function that has the train, valid, and test arguments pre-filled. This new function only needs one argument: file_name.
+```py
+with closing(Pool(np.min([tot_process, len(files_smiles)]))) as pool:
+    pool.map(partial(extract_smile, train=all_train, valid=all_valid, test=all_test), files_smiles)
+```
+The really notable difference here is the use of the `partial()` function, from `functools`. Here is an explanation I found:
 
-This is useful when you use pool.map to apply the function to each element in files_smiles. pool.map only provides one argument to the function (each element in files_smiles), so by using partial, you can create a version of extract_smile that only needs one argument. This allows you to use extract_smile with pool.map without having to modify the function or the way you call pool.map.
+>"The `extract_smile` function takes four arguments: `file_name`, `train`, `valid`, and `test`. It opens a file with the given file_name, reads each line, and checks if the last element of the line (after splitting by spaces) is in the train, valid, or test dictionaries. If it is, it increments the corresponding count in the dictionary and writes the line to the corresponding file if it's the first occurrence.
+>
+>When you use `partial(extract_smile, train=train, valid=valid, test=test)`, you're creating a new function that has the train, valid, and test arguments pre-filled. This new function only needs one argument: `file_name`.
+>
+>This is useful when you use `pool.map` to apply the function to each element in `files_smiles`. `pool.map` only provides one argument to the function (each element in `files_smiles`), so by using `partial`, you can create a version of `extract_smile` that only needs one argument. This allows you to use `extract_smile` with `pool.map` without having to modify the function or the way you call `pool.map`.
+>
+>In other words, partial allows you to "adapt" the `extract_smile` function to be used with `pool.map` in a multiprocessing context."
 
-In other words, partial allows you to "adapt" the extract_smile function to be used with pool.map in a multiprocessing context."
+Let's continue look at the `extract_smile()` function. 
+
+```py
+def extract_smile(file_name, train, valid, test):
+    # This function extracts the smiles from a file to write them to train, test, and valid files for model training.
+    ref1 = open(ITER_PATH + '/smile/' + 'train_' + file_name.split('/')[-1], 'w')
+    ref2 = open(ITER_PATH + '/smile/' + 'valid_' + file_name.split('/')[-1], 'w')
+    ref3 = open(ITER_PATH + '/smile/' + 'test_' + file_name.split('/')[-1], 'w')
+
+    with open(file_name, 'r') as ref:
+        ref.readline()
+        for line in ref:
+            tmpp = line.strip().split()[-1]
+            if tmpp in train.keys():
+                train[tmpp] += 1
+                if train[tmpp] == 1: ref1.write(line)
+
+            elif tmpp in valid.keys():
+                valid[tmpp] += 1
+                if valid[tmpp] == 1: ref2.write(line)
+
+            elif tmpp in test.keys():
+                test[tmpp] += 1
+                if test[tmpp] == 1: ref3.write(line)
+```
+
+You can see that although the `train`, `valid`, and `test` arguments are used - they are not initalized here. They require the previous portion of `main()` that sets them as empty dictionaries:
+
+```py
+all_train = {}
+all_valid = {}
+all_test = {}
+```
+And then populates them with the `train_set.txt`, `valid_set.txt`, and `test_set.txt` files.
+
+```py
+with open(ITER_PATH + "/train_set.txt", 'r') as ref:
+        for line in ref:
+            all_train[line.rstrip()] = 0
+
+    with open(ITER_PATH + "/valid_set.txt", 'r') as ref:
+        for line in ref:
+            all_valid[line.rstrip()] = 0
+
+    with open(ITER_PATH + "/test_set.txt", 'r') as ref:
+        for line in ref:
+            all_test[line.rstrip()] = 0
+```
+
+There is then logic to remove the keys from the dictionaries that are already in the `train`, `valid`, and `test` sets, but those are empty dictionaries so it doesn't do anything. 
+
+Returning to the function, we skip the first line with readline() and then iterate through the file (`file_name`) that is called on the library of SMILES (`files_smiles`). Note: I don't think this `readline()` approach is a great idea, at least without warning the user. Looking at my SMILES library, my part_00_smiles.txt does not have a header. The presence of this header, or the requirement for it, is very software dependent (e.g. does MayaChemTools or Schrodinger require the header? When they output files, do they include the header?). If you tell the user that their SMILES files (which are also called .txt files, which I don't love) need a header, then they can add it and this script can remain mostly as is. 
+
+Here is my `part_00_smiles.txt` file's first line:
+
+Cc1cccc2c1OC[C@@H]2C(=O)NCC1(CO)CNC1 Z6430701089_Isomer1
+
+We can see the last element is the ID. Using `tmpp = line.strip().split()[-1]` is splitting on ` ` (space) and taking the last element. This is a little dangerous, because if the ID has a space in it, it will be split into two elements. I don't think this is a problem for the current data, but it is something to be aware of. 
+
+The `if` statements are checking if the ID is in the `train`, `valid`, or `test` dictionaries. If it is, it increments the count in the dictionary and writes the line to the corresponding file if it's the first occurrence. Since the the dictionaries were previously populated and all if statements are sequential, this should only write the first occurrence of each ID to the corresponding file. 
+
+The `alternate_concat()` function is used to return a list of the lines in a file. It is used in `main()` like so: 
+```py
+with closing(Pool(np.min([tot_process, len(files)]))) as pool:
+    to_print = pool.map(alternate_concat, files)
+```
+
+And it is defined like so: 
+```py
+def alternate_concat(files):
+    # Returns a list of the lines in a file
+    with open(files, 'r') as ref:
+        return ref.readlines()
+```
+
+This is functionally equivalent to the `extract_morgan()` function's `alternate_concat()` function. Though, I think the `extract_morgan()` function's `alternate_concat()` function is a little more clear and potentially more memory safe. 
+
+The `smile_duplicacy()` function is used to remove duplicate molecules from the file. It is used in `main()` like so: 
+```py
+with closing(Pool(np.min([tot_process, len(f_names)]))) as pool:
+    pool.map(smile_duplicacy, f_names)
+```
+As far as I can tell, it behaves just like `morgan_duplicacy()` from `extracting_morgan.py`. 
+
+The `delete_all()` function is used to delete all files. It is used in `main()` like so: 
+```py
+with closing(Pool(np.min([tot_process, len(all_to_delete)]))) as pool:
+    pool.map(delete_all, all_to_delete)
+```
+
+Also, as far as I can tell, it behaves just like `delete_all()` from `extracting_morgan.py`. 
+
+The `main()` function is very similar to `extracting_morgan.py`'s `main()` function, except for these likely extraneous code blocks and the use of `partial()` in `pool.map()`. 
+
+Now, we have the SMILES files in the `ITER_PATH + '/smile/'` directory. 
