@@ -203,10 +203,10 @@ if __name__=='__main__':
     print("Done - Time Taken", time.time()-t)
 ```
 
-#### Debugging Print Function
+##### Debugging Print Function
 It overrides the built-in `print` function for debugging, prefixing output with "\t molecular_file_count_updated: " to differentiate script output from other messages.
 
-#### Argument Parsing
+##### Argument Parsing
 The five required command-line arguments:
 - **project_name** (`-pt`): Name of the DD project.
 - **n_iteration** (`-it`): The current iteration number of the DD process.
@@ -216,7 +216,7 @@ The five required command-line arguments:
 
 All are set from the information we pass in `phase 1.sh`. Importantly, `t_samp` is found via `mols_to_dock`.
 
-#### Main Functionality
+##### Main Functionality
 1. **File Discovery**: Uses `glob.glob` to find all `.txt` files in the specified data directory as the `files` list.  
 
 2. **Parallel Molecule Counting**:
@@ -390,10 +390,10 @@ if __name__ == '__main__':
     print("Compressing smile file...")
     print("Sampling Complete - Total Time Taken:", time.time()-t)
 ```
-#### Debugging Print Function
+##### Debugging Print Function
 It overrides the built-in `print` function for debugging, prefixing output with "\t sampling: " to differentiate script output from other messages.
 
-#### Argument Parsing
+##### Argument Parsing
 The seven required command-line arguments:
 - **project_name** (`-pt`): Name of the DD project.
 - **file_path** (`-fp`): Path to the project directory, excluding project directory name. This is the `file_path` variable we set in `phase_1.sh`.
@@ -490,11 +490,11 @@ Then, the *_set.txt is saved in the iteration_X directory and written.
 
 I find the part with the indices setting hard to follow, so here is one potential answer:
 
-shuffle_array: This is a numpy array that starts as a sequence of integers from 0 to total_len-1. After shuffling, the order of these integers is randomized. For example, if total_len is 5, shuffle_array might start as `[0, 1, 2, 3, 4]` and then become something like `[3, 0, 4, 1, 2]` after shuffling.
+`shuffle_array`: This is a numpy array that starts as a sequence of integers from 0 to total_len-1. After shuffling, the order of these integers is randomized. For example, if `total_len` is 5, `shuffle_array` might start as `[0, 1, 2, 3, 4]` and then become something like `[3, 0, 4, 1, 2]` after shuffling.
 
-train_ind, valid_ind, test_ind: These are slices of the shuffled array, so they are also numpy arrays containing a subset of the integers from 0 to total_len-1, in a random order. For example, if to_sample is 2, train_ind might be `[3, 0]`, valid_ind might be `[4, 1]`, and test_ind might be [2].
+`train_ind`, `valid_ind`, `test_ind`: These are slices of the shuffled array, so they are also numpy arrays containing a subset of the integers from 0 to total_len-1, in a random order. For example, if `to_sample` is 2, `train_ind` might be `[3, 0]`, `valid_ind` might be `[4, 1]`, and `test_ind` might be [2].
 
-train_ind_dict, valid_ind_dict, test_ind_dict: These are dictionaries where the keys are the integers in train_ind, valid_ind, and test_ind, respectively, and the values are all 1. For example, if train_ind is `[3, 0]`, `train_ind_dict` would be `{3: 1, 0: 1}`.
+`train_ind_dict`, `valid_ind_dict`, `test_ind_dict`: These are dictionaries where the keys are the integers in `train_ind`, `valid_ind`, and `test_ind`, respectively, and the values are all 1. For example, if `train_ind` is `[3, 0]`, `train_ind_dict` would be `{3: 1, 0: 1}`.
 
 Then, when we act on the file_name (the *.txt files in the prediction directory) we use the index of the file to sample. So using `train_ind_dict` = `{3: 1, 0: 1}`
 
@@ -640,7 +640,7 @@ Finally, the `*_set.txt` files are written with the remaining molecules, ensurin
 
 We can now move on to `extracting_morgan.py`:
 
-### `extracting_morgan.py`
+#### `extracting_morgan.py`
 
 ```sh
 python scripts_1/extracting_morgan.py -pt $protein -fp $file_path -it $1 -md $morgan_directory -t_pos $t_cpu
@@ -798,7 +798,7 @@ if __name__ == '__main__':
         pool.map(delete_all, all_to_delete)
 ```
 
-#### Functions: 
+##### Functions: 
 
 We are familiar with imports now, so let's move to function-by-function explanations: 
 
@@ -941,7 +941,6 @@ Now, the next steps are likely to appropriately concat these files and remove th
 Here are the last three functions before we begin using them in `main()`:
 
 ```py
-
 def alternate_concat(files):
     to_return = []
     with open(files, 'r') as ref:
@@ -968,10 +967,10 @@ def morgan_duplicacy(f_name):
                 ref1.write(line)
                 flag = 0
     os.remove(f_name)
-
 ```
 
 The `alternate_concat` function is used to read the files we just made. It is used in `main()` like so: 
+
 ```py
 with closing(Pool(np.min([tot_process, len(files)]))) as pool:
     to_print = pool.map(alternate_concat, files)
@@ -1078,7 +1077,7 @@ test_morgan_1024_updated.csv
 
 Now, we need to extract the smiles to finish phase_1!
 
-### Extracting Smiles
+#### `extracting_smiles.py`
 
 ```sh
 python scripts_1/extracting_smiles.py -pt $protein -fp $file_path -it $1 -smd $smile_directory -t_pos $t_cpu
@@ -1265,11 +1264,11 @@ if __name__ == '__main__':
         pool.map(delete_all, all_to_delete)
 ```
 
-#### Extra Code?
+##### Extra Code?
 
 There is a code section I commented out because it doesn't seem to do anything. I am not sure why it is there. 
 
-#### Functions
+##### Functions
 
 These functions are very similar to `extracting_morgan.py`, which makes lot of sense. At first glance, it is written a little more cleanly, for example, using `ITER_PATH` as a constant for the path to the iteration directory. There are other changes as well, again, they seem to be synonmous functionally but I'll investigate to be more sure.
 
@@ -1395,3 +1394,332 @@ Also, as far as I can tell, it behaves just like `delete_all()` from `extracting
 The `main()` function is very similar to `extracting_morgan.py`'s `main()` function, except for these likely extraneous code blocks and the use of `partial()` in `pool.map()`. 
 
 Now, we have the SMILES files in the `ITER_PATH + '/smile/'` directory. 
+
+### Phase 2 and Phase 3
+
+Both of these phases are relatively straight forward and control the ligand preparation and docking you do. I'll skip it here for brevity.
+
+It does give me the idea of hosting a version of Deep Docking on my Github that is configured towards my group's use (e.g. LigPrep/Glide).
+
+I could also store the environment necessary to interact with our GPUs. Maybe update to Poetry? 
+
+### Phase 4
+
+Phase 4 extracts the labels we've generated in Phase 2/3 and puts them into a format that can be used for training. 
+
+It is run like so: 
+
+```sh
+sbatch phase_4.sh current_iteration 3 path_project project name_gpu_partition tot_number_iterations percent_first_mols percent_last_mols_value recall_value 00-15:00 conda_env
+```
+
+Where `current_iteration`  ($1) is the current iteration, `3` ($2) is the total amount of processors available, `path_project` ($3) is the path to the project, `project` ($4) is the name of the project, `name_gpu_partition` ($5) is the name of the partition, `tot_number_iterations` ($6) is the total number of iterations, `percent_first_mols` ($7) is the percentage of the first molecules to be used, `percent_last_mols_value` ($8) is the percentage of the last molecules to be used, `recall_value` ($9) is the recall value, `00-15:00` ($10) is the time, and `conda_env` ($11) is the conda environment. 
+
+
+```sh
+#!/bin/bash
+#SBATCH --cpus-per-task=3
+#SBATCH --ntasks=1
+#SBATCH --mem=0               # memory per node
+#SBATCH --job-name=phase_4
+
+env=${11}
+time=${10}
+
+source ~/.bashrc
+conda activate $env
+
+file_path=`sed -n '1p' $3/$4/logs.txt`
+protein=`sed -n '2p' $3/$4/logs.txt`
+
+morgan_directory=`sed -n '4p' $3/$4/logs.txt`
+smile_directory=`sed -n '5p' $3/$4/logs.txt`
+nhp=`sed -n '7p' $3/$4/logs.txt`    # number of hyperparameters
+sof=`sed -n '6p' $3/$4/logs.txt`    # The docking software used
+
+rec=$9
+
+num_molec=`sed -n '8p' $3/$4/logs.txt`
+
+echo "writing jobs"
+python jobid_writer.py -pt $protein -fp $file_path -n_it $1 -jid $SLURM_JOB_NAME -jn $SLURM_JOB_NAME.txt
+
+t_pos=$2    # total number of processers available
+echo "Extracting labels"
+
+if [ $sof = 'Glide' ]; then
+   kw='r_i_docking_score'
+elif [ $sof = 'FRED' ]; then
+   kw='FRED Chemgauss4 score'
+fi   
+
+python scripts_2/extract_labels.py -n_it $1 -pt $protein -fp $file_path -t_pos $t_pos -score "$kw"
+
+if [ $? != 0 ]; then
+  echo "Extract_labels failed... terminating"
+  exit
+fi
+
+part_gpu=$5
+
+if [ $6 = $1 ]; then
+   last='True'
+else
+   last='False'
+fi
+
+echo "Creating simple jobs"
+python scripts_2/simple_job_models.py -n_it $1 -mdd $morgan_directory -time $time -file_path $file_path/$protein -nhp $nhp -titr $6 -n_mol $num_molec -pfm $7 -plm $8 -ct $rec -gp $part_gpu -tf_e $env -isl $last
+
+cd $file_path/$protein/iteration_$1
+rm model_no.txt
+cd simple_job
+
+echo "Running simple jobs"
+#Executes all the files that were created in the simple_jobs directory
+for f in *;do sbatch $f;done
+```
+The shell script logic is pretty straight forward, so I will move to the `extract_labels.py` script. 
+
+#### `extract_labels.py`
+
+```py
+import argparse
+import builtins as __builtin__
+import glob
+import gzip
+import os
+from contextlib import closing
+from multiprocessing import Pool
+
+
+# For debugging purposes only:
+def print(*args, **kwargs):
+    __builtin__.print('\t extract_L: ', end="")
+    return __builtin__.print(*args, **kwargs)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-pt', '--project_name', required=True, help='Name of the DD project')
+parser.add_argument('-fp', '--file_path', required=True, help='Path to the project directory, excluding project directory name')
+parser.add_argument('-n_it', '--iteration_no', required=True, help='Number of current iteration')
+parser.add_argument('-t_pos', '--tot_process', required=True, help='Number of CPUs to use for multiprocessing')
+parser.add_argument('-score', '--score_keyword', required=True, help='Score keyword. Name of the field storing the docking score in the SDF files of docking results')
+
+io_args = parser.parse_args()
+n_it = int(io_args.iteration_no)
+protein = io_args.project_name
+file_path = io_args.file_path
+tot_process = int(io_args.tot_process)
+key_word = str(io_args.score_keyword)
+
+# mol_key = 'ZINC'
+print("Keyword: ", key_word)
+
+
+def get_scores(ref):
+    scores = []
+    for line in ref:  # Looping through the molecules
+        zinc_id = line.rstrip()
+        line = ref.readline()
+        # '$$$' signifies end of molecule info
+        while line != '' and line[:4] != '$$$$':  # Looping through its information and saving scores
+
+            tmp = line.rstrip().split('<')[-1]
+
+            if key_word == tmp[:-1]:
+                tmpp = float(ref.readline().rstrip())
+                if tmpp > 50 or tmpp < -50:
+                    print(zinc_id, tmpp)
+                else:
+                    scores.append([zinc_id, tmpp])
+
+            line = ref.readline()
+    return scores
+
+
+def extract_glide_score(filen):
+    scores = []
+    try:
+        # Opening the GNU compressed file
+        with gzip.open(filen, 'rt') as ref:
+            scores = get_scores(ref)
+
+    except Exception as e:
+        print('Exception occured in Extract_labels.py: ', e)
+        # file is already decompressed
+        with open(filen, 'r') as ref:
+            scores = get_scores(ref)
+
+    if 'test' in os.path.basename(filen):
+        new_name = 'testing'
+    elif 'valid' in os.path.basename(filen):
+        new_name = 'validation'
+    elif 'train' in os.path.basename(filen):
+        new_name = 'training'
+    else:
+        print("Could not generate new training set")
+        exit()
+
+    with open(file_path + '/' + protein + '/iteration_' + str(n_it) + '/' + new_name + '_' + 'labels.txt', 'w') as ref:
+        ref.write('r_i_docking_score' + ',' + 'ZINC_ID' + '\n')
+        for z_id, gc in scores:
+            ref.write(str(gc) + ',' + z_id + '\n')
+
+
+if __name__ == '__main__':
+    files = []
+    iter_path = file_path + '/' + protein + '/iteration_' + str(n_it)
+
+    # Checking to see if the labels have already been extracted:
+    sets = ["training", "testing", "validation"]
+    files_labels = glob.glob(iter_path + "/*_labels.txt")
+    foundAll = True
+    for s in sets:
+        found = False
+        print(s)
+        for f in files_labels:
+            set_name = f.split('/')[-1].split("_labels.txt")[0]
+            if set_name == s:
+                found = True
+                print('Found')
+                break
+        if not found:
+            foundAll = False
+            print('Not Found')
+            break
+    if foundAll:
+        print('Labels have already been extracted...')
+        print('Remove "_labels.text" files in \"' + iter_path + '\" to re-extract')
+        exit(0)
+
+    path = iter_path + '/docked/*.sdf*'
+    path_labels = iter_path + '/*labels*'
+
+    for f in glob.glob(path):
+        files.append(f)
+
+    print("num files in", path, ":", len(files))
+    print("Files:", [os.path.basename(f) for f in files])
+    if len(files) == 0:
+        print('NO FILES IN: ', path)
+        print('CANCEL JOB...')
+        exit(1)
+
+    # Parallel running of the extract_glide_score() with each file path of the files array
+    with closing(Pool(len(files))) as pool:
+        pool.map(extract_glide_score, files)
+```
+
+##### Functions 
+
+The `get_scores()` function is used to extract the scores from the SDF files. It is used *inside* `extract_glide_score()` like so: 
+
+```py
+scores = get_scores(ref)
+```
+
+It is defined like so: 
+```py
+def get_scores(ref):
+    scores = []
+    for line in ref:  # Looping through the molecules
+        zinc_id = line.rstrip()
+        line = ref.readline()
+        # '$$$' signifies end of molecule info
+        while line != '' and line[:4] != '$$$$':  # Looping through its information and saving scores
+            tmp = line.rstrip().split('<')[-1]
+            if key_word == tmp[:-1]:
+                tmpp = float(ref.readline().rstrip())
+                if tmpp > 50 or tmpp < -50:
+                    print(zinc_id, tmpp)
+                else:
+                    scores.append([zinc_id, tmpp])
+            line = ref.readline()
+    return scores
+```
+
+This function will be called on an SDF file, we start with an empty scores list and start reading it like a text file. The first line is the molecule identifier (called `zinc_id` here). We strip the white space and save it. Then we read the next line. If the line is not empty and the first four characters are not `$$$$` (which signifies the end of the molecule information), we enter the while loop. We set tmp to the stripped line, split it on `<`, and take the last element. If the `key_word` (which is the score keyword) is equal to the `tmp` (minus the last character, which is `>`), *we read the next line* (`tmpp = float(ref.readline().rstrip())`), strip it, and convert it to a float. If the float is greater than 50 or less than -50, we print the `zinc_id` and the `tmpp` (which is the score). Otherwise, we append the `zinc_id` and the `tmpp` to the `scores` list. 
+
+I think this is really clever, I always struggle with parsing SDF/text files for data like this. I think this is a really good way to do it. 
+
+To better understand, I'll use an example sdf file for benzene. I am going to truncate the file slightly as we don't need all the data, we just need the structure of an sdf entry:
+
+```sh
+Benzene_Demo # Name and start of the molecule
+                    3D
+ Schrodinger Suite 2023-3.
+ 12 12  0  0  1  0            999 V2000
+  -16.9063  -33.3752  -27.6873 C   0  0  0  0  0  0 # 3D coodrinates
+  1  2  1  0  0  0 # Connectivity 
+M  END
+> <i_epik_Tot_Q> # Various property values
+0
+
+> <r_i_docking_score>
+-4.60724452472058
+
+$$$$ # End of molecule
+```
+
+When we start `for line in ref`, we are going to read this file line by line. The first line we see is going to be our molecule ID, and we save that. So we are here in the file: 
+
+```
+Benzene_Demo # Name and start of the molecule
+```
+
+Then, crucially, we advance the file pointer to the next line *which affects the for loop*. The for loop is now ahead one more increment. 
+
+Now we are here: 
+
+```
+Benzene_Demo # Name and start of the molecule
+                    3D
+```
+
+We check if the line is empty or if the first four characters are `$$$$`. They are not, so we enter the while loop.
+
+We set `tmp` to the last element of the split line. This is going to be `r_i_docking_score>`. We check if `key_word` is equal to `tmp[:-1]`. If it is is we are going to read the line ahead of it to get the docking score (again we increment the for loop position) This is going to be `-4.60724452472058`. We are now here:
+
+```
+Benzene_Demo # Name and start of the molecule
+                    3D
+ Schrodinger Suite 2023-3.
+ 12 12  0  0  1  0            999 V2000
+  -16.9063  -33.3752  -27.6873 C   0  0  0  0  0  0 # 3D coodrinates
+  1  2  1  0  0  0 # Connectivity 
+M  END
+> <i_epik_Tot_Q> # Various property values
+0
+
+> <r_i_docking_score>
+-4.60724452472058
+```
+
+ We strip it and convert it to a float. We check if it is greater than 50 or less than -50. It is not, so we append the `zinc_id` and the `tmpp` to the `scores` list. 
+
+ Then we again increment the for loop pointer and we are at the `$$$$`:
+
+ ```sh
+Benzene_Demo # Name and start of the molecule
+                    3D
+ Schrodinger Suite 2023-3.
+ 12 12  0  0  1  0            999 V2000
+  -16.9063  -33.3752  -27.6873 C   0  0  0  0  0  0 # 3D coodrinates
+  1  2  1  0  0  0 # Connectivity 
+M  END
+> <i_epik_Tot_Q> # Various property values
+0
+
+> <r_i_docking_score>
+-4.60724452472058
+
+$$$$ # End of molecule
+```
+
+Now, we go back to the for loop, that will read the line *after* the `$$$$`. If we have more molecules, we will then get that ID. If we don't we have reached the end of the file.
+
+When feeding the above explanation through coding LLMs, it doesn't like how I've phrased skipping lines/advancing the file pointer. However the practical outcome seems the same.
+
+The rest of the script is actually pretty readable to me. We are essentially supplying paths so we can call `extract_scores()` on the desired files. We are also checking to see if the labels have already been extracted. If they have, we exit. I think I'd actually like this functionality in the other parts of the workflow as well, as a safe gaurd. 
+
