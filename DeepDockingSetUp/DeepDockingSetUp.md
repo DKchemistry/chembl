@@ -2254,3 +2254,87 @@ print('Runtime:', time.time() - START_TIME)
 ```
 
 Which get's us to the portion where we can now do the machine learning related stuff!
+
+##### `progressive_docking.py`
+
+This is the script that is called by the `simple_job_X.sh` scripts for the hyperparameters. I would like to return to the hyperparameters later with with Francesco. For now, let's continue. `progressive_docking.py` is called via a shell script, I have an example below, however keep in mind I have a variation of progressive docking (and the phase_4.sh) script that accounts for slightly different syntax to allow sourcing the conda environment/SLURM partition as well as memory management in progressive_docking.py (that's why I have a `_2` in here):
+
+```sh
+#!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --job-name=phase_4
+#SBATCH --mem=0               # memory per node
+#SBATCH --partition=LocalQ
+#SBATCH --time=00-20:00            # time (DD-HH:MM)
+
+cd /mnt/data/dk/work/DD_protocol/scripts_2
+source ~/.bashrc
+source activate dd-nvi
+python -u progressive_docking_2.py -os 10 -bs 256 -num_units 100 -dropout 0.2 -learn_rate 0.0001 -bin_array 2 -wt 2 -cf -7.426796974665713 -rec 0.9 -n_it 1 -t_mol 3086.454974 --data_path /mnt/data/dk/work/DeepDocking/projects/3_EnamineDiverse --save_path /mnt/data/dk/work/DeepDocking/projects/3_EnamineDiverse -n_mol 12000000
+ echo complete
+ ```
+
+The script is very long so rather than copy and paste the whole thing, we are going to seperate it into logical chunks and discuss them.
+
+##### Imports (and memory related modifications)
+
+We have the usual imports as well as some new functionality we need to cover. Some of the code related to the model is handled in other scripts provided in the Deep Docking repository. They are accessed like so: 
+
+```py
+from ML.DDModel import DDModel
+from ML.DDCallbacks import DDLogger
+```
+
+We also now import tensorflow and keras. Both of these libraries are APIs for machine learning tasks. I am not familiar with either of them, but my research into them distinguishes that tensorflow is a more complete package offering a lot of granular control over ML related tasks (and also high level function), while keras is more focused towards high level, easy to use functions for ML experimentation. Hopefully I learn more as we go through the code. 
+
+I do want to make a quick note here, about memory. 
+
+In `progressive_docking_2.py`, I have this line after the `tensorflow` import: 
+
+> 
+```py
+config = tensorflow.ConfigProto()
+config.gpu_options.allow_growth=True
+sess=tensorflow.Session(config=config)
+```
+I think it's important to discuss this as it maybe something we want to add to the original `progressive_docking.py` script. Again, I am not an expert, so I found this explanation (to be determined if it's correct, but it parses with my understanding):
+
+>
+>The code snippet you've provided is configuring TensorFlow to dynamically allocate GPU memory for the process that's running your `progressive_docking.py` script, rather than allocating the entirety of the GPU's memory upfront. Let's break down what each part does:
+>
+>1. **`tensorflow.ConfigProto()`**: This creates a `ConfigProto` object, which holds configuration options such as thread settings, GPU options, and other global settings for a TensorFlow session. It allows you to specify how resources are allocated and managed by TensorFlow sessions.
+>
+>2. **`config.gpu_options.allow_growth = True`**: This line sets the `allow_growth` option of the `gpu_options` attribute to `True`. By default, TensorFlow allocates all of the available GPU memory when a TensorFlow session starts. This can be inefficient if the TensorFlow session does not actually require all the GPU memory, and it can prevent other applications from using the GPU. When `allow_growth` is set to `True`, TensorFlow starts off by allocating only a small amount of memory and then increases the allocation as needed by the process, up to the maximum GPU memory. This way, only the necessary amount of GPU memory is used by the TensorFlow session, allowing for the coexistence of multiple TensorFlow processes on the same GPU or the sharing of the GPU with other applications.
+>
+>3. **`tensorflow.Session(config=config)`**: This initializes a TensorFlow session with the configuration options specified in the `config` object. A TensorFlow session is the environment in which TensorFlow operations are executed, and tensors are evaluated. By passing the configured `config` object to the session, you're telling TensorFlow to manage GPU memory as specified by the `gpu_options`.
+>
+>However, it's worth noting that `ConfigProto`, `gpu_options`, and the way sessions are handled have been updated in TensorFlow 2.x. The code snippet you provided applies to TensorFlow 1.x. In TensorFlow 2.x, eager execution is enabled by default, and the approach to managing GPU memory allocation looks slightly different, typically involving `tf.config.experimental.set_memory_growth` as shown below:
+>
+>```python
+>import tensorflow as tf
+>
+>gpus = tf.config.experimental.list_physical_devices('GPU')
+>if gpus:
+>  try:
+>    for gpu in gpus:
+>      tf.config.experimental.set_memory_growth(gpu, True)
+>  except RuntimeError as e:
+>    print(e)
+>```
+>
+>This TensorFlow 2.x code does something similar: it tells TensorFlow to only allocate as much GPU memory as needed for the process, allowing the memory to grow if necessary, without grabbing all available memory upfront. This is generally a good practice for avoiding memory allocation issues and allowing multiple processes to share GPU resources more effectively.
+
+##### Argument Parsing
+
+We have the usual `argparse` imports plus the hyperparameters.  There are some arguments related to things that are not required and not used in this script, likely from previous versions developed by Francesco et al. I'll skip them for now, as I am not sure we really need them, even when moving to strain. Likely we will handle strain as a classification task, like docking scores are already natively handled. The other arguments seem to related towards using things I do not think we will be experimenting with. Here they are:
+
+```py
+# allowing for variable number of molecules to validate and test from:
+parser.add_argument('-n_mol', '--number_mol', required=False, default=1000000)
+parser.add_argument('-t_n_mol', '--train_num_mol', required=False, default=-1)
+parser.add_argument('-cont', '--continuous', required=False, action='store_true')   # Using binary or continuous labels
+parser.add_argument('-smile', '--smiles', required=False, action='store_true')      # Using smiles or morgan as or continuous labels
+parser.add_argument('-norm', '--normalization', required=False, action='store_false')   # if continuous labels are used -> normalize them?
+```
+
