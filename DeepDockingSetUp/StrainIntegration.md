@@ -39,3 +39,20 @@ Currently, the integration of strain metrics into Deep Docking is being written 
 ![Multi-Task Model Architecture](.StrainIntegrationImages/Multitask_classification_stackexchange.png)
 
 In the architecture above, the model is sharing representation layers from the input data, but then splits into two separate output layers for the two tasks. This could be advantageous for several reasons but I need to discuss this with Francesco. It is also possible, of course, to simply have two separate models, one for docking scores and one for strain energies. This can be an easier approach as their loss functions are indepndent of one another. 
+
+### Strain Energy label extraction 
+
+It will be necessary to extract the strain energy labels from the Gu et al code, preferably in analogous way to Deep Docking. 
+
+Docking scores are extracted in `phase_4`, via `extract_labels.py`. The output is a txt file like `validation_labels.txt` with the following format. 
+
+r_i_docking_score,ZINC_ID
+-10.5406,PV-006284534362_Isomer2
+
+Initial demo script of that functionality available in `extract_strain_labels.py`. Needs some additional tweaks to be fully functional. 
+
+Worthwhile to think of how exactly strain csv files will be saved in the context of Deep Docking. To maintain consistency, it would probably be best to save to a `strain` directory within an `iteration_` directory, just like `docked` is. 
+
+Additionally, I believe Francesco's code can use the sdfgz files directly. I wonder if the `refactor_Torsion_Strain.py` and `refactor_TL_Functions.py` can be modified to have an sdfgz mol supplier? That would save the need to convert out of the sdfgz format. 
+
+Additionally, at least in my benchmarking work, I noticed it was possible to have multiple conformers per molecule (sometimes). I dealt with this using the `$SCHRODINGER/utilities/glide_sort` utility (which also allowed for decompression), but I think it would be better to explicitly force Glide to only record the best scoring conformer. I think this is possible with the inp file, I should check with Schrodinger. 
