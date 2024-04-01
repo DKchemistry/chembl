@@ -46,7 +46,7 @@ It will be necessary to extract the strain energy labels from the Gu et al code,
 
 Docking scores are extracted in `phase_4`, via `extract_labels.py`. The output is a txt file like `validation_labels.txt` with the following format. 
 
-r_i_docking_score,ZINC_ID
+r_i_docking_score,ZINC_ID  
 -10.5406,PV-006284534362_Isomer2
 
 Initial demo script of that functionality available in `extract_strain_labels.py`. Needs some additional tweaks to be fully functional. 
