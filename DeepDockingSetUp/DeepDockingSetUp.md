@@ -1723,3 +1723,534 @@ When feeding the above explanation through coding LLMs, it doesn't like how I've
 
 The rest of the script is actually pretty readable to me. We are essentially supplying paths so we can call `extract_scores()` on the desired files. We are also checking to see if the labels have already been extracted. If they have, we exit. I think I'd actually like this functionality in the other parts of the workflow as well, as a safe gaurd. 
 
+We can now move on to the `simple_job_models.py` script. 
+
+#### `simple_job_models.py`
+
+The next portion of the shell script calls this line:
+
+```sh
+python scripts_2/simple_job_models.py -n_it $1 -mdd $morgan_directory -time $time -file_path $file_path/$protein -nhp $nhp -titr $6 -n_mol $num_molec -pfm $7 -plm $8 -ct $rec -gp $part_gpu -tf_e $env -isl $last
+```
+
+This is the `simple_job_models.py` script:
+
+```py
+import builtins as __builtin__
+import pandas as pd
+import numpy as np
+import argparse
+import glob
+import time
+import os
+
+try:
+    import __builtin__
+except ImportError:
+    # Python 3
+    import builtins as __builtin__
+    
+# For debugging purposes only:
+def print(*args, **kwargs):
+    __builtin__.print('\t simple_jobs: ', end="")
+    return __builtin__.print(*args, **kwargs)
+
+
+START_TIME = time.time()
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-n_it','--iteration_no',required=True,help='Number of current iteration')
+parser.add_argument('-mdd','--morgan_directory',required=True,help='Path to the Morgan fingerprint directory for the database')
+parser.add_argument('-time','--time',required=True,help='Time limit for training')
+parser.add_argument('-file_path','--file_path',required=True,help='Path to the project directory, including project directory name')
+parser.add_argument('-nhp','--number_of_hyp',required=True,help='Number of hyperparameters')
+parser.add_argument('-titr','--total_iterations',required=True,help='Desired total number of iterations')
+
+parser.add_argument('-isl','--is_last',required=True,help='True/False for is this last iteration')
+parser.add_argument('-gp','--gpu_part',required=True,help='name(s) of GPU partitions')
+parser.add_argument('-tf_e','--tensorflow_env',required=True,help='name of tensorflow-gpu environment')
+
+# adding parameter for where to save all the data to:
+parser.add_argument('-save', '--save_path', required=False, default=None)
+
+# allowing for variable number of molecules to test and validate from:
+parser.add_argument('-n_mol', '--number_mol', required=False, default=1000000, help='Size of validation/test set to be used')
+
+parser.add_argument('-pfm', '--percent_first_mols', required=True, help='% of top scoring molecules to be considered as virtual hits in the first iteration (for standard DD run on 11 iterations, we recommend 1)')  # these two inputs must be percentages
+parser.add_argument('-plm', '--percent_last_mols', required=True, help='% of top scoring molecules to be considered as virtual hits in the last iteration (for standard DD run on 11 iterations, we recommend 0.01)')
+
+
+# Pass the threshold
+parser.add_argument('-ct', '--recall', required=False, default=0.9, help='Recall, [0,1] range, default value 0.9')
+
+
+funct_flags = parser.add_mutually_exclusive_group(required=False)
+funct_flags.add_argument('-expdec', '--exponential_dec', required=False, default=-1) # must pass in the base number
+funct_flags.add_argument('-polydec', '--polynomial_dec', required=False, default=-1) # You must also pass in to what power for this flag
+
+io_args, extra_args = parser.parse_known_args()
+n_it = int(io_args.iteration_no)
+mdd = io_args.morgan_directory
+time_model = io_args.time
+nhp = int(io_args.number_of_hyp)
+isl = io_args.is_last
+titr = int(io_args.total_iterations)
+rec = float(io_args.recall)
+gpu_part = str(io_args.gpu_part)
+env  = str(io_args.tensorflow_env)
+protein = str(io_args.file_path).split('/')[-1]
+
+num_molec = int(io_args.number_mol)
+
+percent_first_mols = float(io_args.percent_first_mols)/100
+percent_last_mols = float(io_args.percent_last_mols)/100
+
+exponential_dec = int(io_args.exponential_dec)
+polynomial_dec = int(io_args.polynomial_dec)
+
+DATA_PATH = io_args.file_path   # Now == file_path/protein
+SAVE_PATH = io_args.save_path
+# if no save path is provided we just save it in the same location as the data
+if SAVE_PATH is None: SAVE_PATH = DATA_PATH
+
+# sums the first column and divides it by 1 million (this is our total database size)
+t_mol = pd.read_csv(mdd+'/Mol_ct_file_%s.csv'%protein,header=None)[[0]].sum()[0]/1000000 # num of compounds in each file is mol_ct_file
+
+cummulative = 0.25*n_it
+dropout = [0.2, 0.5]
+learn_rate = [0.0001]
+bin_array = [2, 3]
+wt = [2, 3]
+if nhp < 144:
+   bs = [256]
+else:
+    bs = [128, 256]
+    
+if nhp < 48:
+    oss = [10]
+elif nhp < 72:
+    oss = [5, 10]
+else:
+    oss = [5, 10, 20]
+
+if nhp < 24:
+    num_units = [1500, 2000]
+else:
+    num_units = [100, 1500, 2000]
+
+try:
+    os.mkdir(SAVE_PATH+'/iteration_'+str(n_it)+'/simple_job')
+except OSError: # catching file exists error
+    pass
+
+# Clearing up space from previous iteration
+for f in glob.glob(SAVE_PATH+'/iteration_'+str(n_it)+'/simple_job/*'):
+    os.remove(f)
+
+scores_val = []
+with open(DATA_PATH+'/iteration_'+str(1)+'/validation_labels.txt','r') as ref:
+    ref.readline()  # first line is ignored
+    for line in ref:
+        scores_val.append(float(line.rstrip().split(',')[0]))
+
+scores_val = np.array(scores_val)
+
+first_mols = int(100*t_mol/13) if percent_first_mols == -1.0 else int(percent_first_mols * len(scores_val))
+
+print(first_mols)
+
+last_mols = 100 if percent_last_mols == -1.0 else int(percent_last_mols * len(scores_val))
+
+print(last_mols)
+
+if n_it==1:
+    # 'good_mol' is the number of top scoring molecules to save at the end of the iteration
+    good_mol = first_mols
+else:
+    if exponential_dec != -1:
+        good_mol = int() #TODO: create functions for these
+    elif polynomial_dec != -1:
+        good_mol = int()
+    else:
+        good_mol = int(((last_mols-first_mols)*n_it + titr*first_mols-last_mols)/(titr-1))     # linear decrease as interations increase
+
+
+print(isl)
+#If this is the last iteration then we save only 100 molecules
+if isl == 'True':
+    good_mol = 100 if percent_last_mols == -1.0 else int(percent_last_mols * len(scores_val))
+
+cf_start = np.mean(scores_val)  # the mean of all the docking scores (labels) of the validation set:
+t_good = len(scores_val)
+
+# we decrease the threshold value until we have our desired num of mol left.
+while t_good > good_mol: 
+    cf_start -= 0.005
+    t_good = len(scores_val[scores_val<cf_start])
+
+print('Threshold (cutoff):',cf_start)
+print('Molec under threshold:', t_good)
+print('Goal molec:', good_mol)
+print('Total molec:', len(scores_val))
+
+all_hyperparas = []
+
+for o in oss:   # Over Sample Size
+    for batch in bs:
+        for nu in num_units:
+            for do in dropout:
+                for lr in learn_rate:
+                    for ba in bin_array:
+                        for w in wt:    # Weight
+                            all_hyperparas.append([o,batch,nu,do,lr,ba,w,cf_start])
+
+print('Total hyp:', len(all_hyperparas))
+
+# Creating all the jobs for each hyperparameter combination:
+
+other_args = ' '.join(extra_args) + '-rec {} -n_it {} -t_mol {} --data_path {} --save_path {} -n_mol {}'.format(rec, n_it, t_mol, DATA_PATH, SAVE_PATH, num_molec)
+print(other_args)
+count = 1
+for i in range(len(all_hyperparas)):
+    with open(SAVE_PATH+'/iteration_'+str(n_it)+'/simple_job/simple_job_'+str(count)+'.sh', 'w') as ref:
+        ref.write('#!/bin/bash\n')
+        ref.write('#SBATCH --ntasks=1\n')
+        ref.write('#SBATCH --gres=gpu:1\n')
+        ref.write('#SBATCH --cpus-per-task=1\n')
+        ref.write('#SBATCH --job-name=phase_4\n')
+        ref.write('#SBATCH --mem=0               # memory per node\n')
+        ref.write('#SBATCH --partition=%s\n'%gpu_part)
+        ref.write('#SBATCH --time='+time_model+'            # time (DD-HH:MM)\n')
+        ref.write('\n')
+        cwd = os.getcwd()
+        ref.write('cd {}/scripts_2\n'.format(cwd))
+        hyp_args = '-os {} -bs {} -num_units {} -dropout {} -learn_rate {} -bin_array {} -wt {} -cf {}'.format(*all_hyperparas[i])
+        ref.write('source ~/.bashrc\n')
+        ref.write('conda activate %s\n'%env)
+        ref.write('python -u progressive_docking.py ' + hyp_args + ' ' + other_args)
+        ref.write("\n echo complete")
+    count += 1
+    
+print('Runtime:', time.time() - START_TIME)
+```
+
+A fairly long script, but not incredibly difficult. The goal of this script is to write out the `progressive_docking.py` script with all the hyperparameters we want to test. I think somewhere here is where we would integrate something like `Optuna` if we wanted to. Let's go through the script.
+
+I will skip over the imports and the `print` function. 
+
+The arguments are mostly what we expect, but there are a few new ones - particularly `-isl` or `--is_last` which is a boolean flag that changes behavior on whether we are at the last iteration or not. 
+
+Additionally, we start seeing terms that are related to the machine learning aspect of this workflow. Two terms I am not familiar with are:
+
+```py
+funct_flags = parser.add_mutually_exclusive_group(required=False)
+funct_flags.add_argument('-expdec', '--exponential_dec', required=False, default=-1) # must pass in the base number
+funct_flags.add_argument('-polydec', '--polynomial_dec', required=False, default=-1) # You must also pass in to what power for this flag
+```
+
+So first, we have an argparse functionality I wasn't aware of, the ability to add mutually exclusive arguments. Only one of these can be set. 
+
+However, this doesn't even seem to matter because the script never sets these terms when it is called earlier in the shell script: 
+
+```sh
+python scripts_2/simple_job_models.py -n_it $1 -mdd $morgan_directory -time $time -file_path $file_path/$protein -nhp $nhp -titr $6 -n_mol $num_molec -pfm $7 -plm $8 -ct $rec -gp $part_gpu -tf_e $env -isl $last
+```
+Here are the terms we do call and their definitions:
+
+- `-n_it` `$1`: Number of the current iteration (passed from the first positional argument in the shell script).
+- `-mdd` `$morgan_directory`: Path to the directory containing Morgan fingerprints.
+- `-time` `$time`: Time limit for the training process.
+- `-file_path` `$file_path/$protein`: Path to the project directory, including the project directory name, with a specific protein.
+- `-nhp` `$nhp`: Number of hyperparameters.
+- `-titr` `$6`: Total desired number of iterations (passed from the sixth positional argument).
+- `-n_mol` `$num_molec`: Number of molecules to consider for validation/testing.
+- `-pfm` `$7`: Percentage of top-scoring molecules to be considered as virtual hits in the first iteration (passed from the seventh positional argument).
+- `-plm` `$8`: Percentage of top-scoring molecules to be considered as virtual hits in the last iteration (passed from the eighth positional argument).
+- `-ct` `$rec`: Recall, a threshold value in the range [0,1].
+- `-gp` `$part_gpu`: Name(s) of GPU partitions.
+- `-tf_e` `$env`: Name of the TensorFlow-GPU environment.
+- `-isl` `$last`: A flag indicating whether this is the last iteration.
+
+Reading the code more closely regarding the mutually exclusive args, I see this part, which seems to indicate these functions are not yet implemented: 
+
+```py 
+if n_it==1:
+    good_mol = first_mols
+else:
+    if exponential_dec != -1:
+        good_mol = int() #TODO: create functions for these
+    elif polynomial_dec != -1:
+        good_mol = int()
+    else:
+        good_mol = int(((last_mols-first_mols)*n_it + titr*first_mols-last_mols)/(titr-1)) # linear decrease as iterations increase
+```
+
+So we will hit the `else:` condition. Here, `good_mol` is set to a value that is a linear function of the number of iterations. 
+
+I think this governs the fact that the amount of data we are considering decreases as we go through more iterations, because we need to challenge the model with more difficult data to make it better. 
+
+This something we probably need to consider during the strain incorporation process. 
+
+Here are some of the args that are setting `good_mol`:
+
+```py
+first_mols = int(100*t_mol/13) if percent_first_mols == -1.0 else int(percent_first_mols * len(scores_val))
+
+print(first_mols)
+
+last_mols = 100 if percent_last_mols == -1.0 else int(percent_last_mols * len(scores_val))
+```
+
+I have never set `percent_first_mols` to -1, so I am not sure exactly why that triggers, but generally first_mols is going to be in the `else` statement. 
+
+`percent_first_mols` and `percent_last_mols` are set in the `argparse` portion of the script. They are defined to be percentages, i.e. the percentage of top scoring molecules with in the bounds of your first and last iterations. You may recall from the original paper that with 10 iterations we move from 1% to 0.01% percent from iteration 1 -> iteration 11. These are in the unit type of *percentages*. Here's the `argparse` portion: 
+
+```py
+parser.add_argument('-pfm', '--percent_first_mols', required=True, help='% of top scoring molecules to be considered as virtual hits in the first iteration (for standard DD run on 11 iterations, we recommend 1)')  # these two inputs must be percentages
+parser.add_argument('-plm', '--percent_last_mols', required=True, help='% of top scoring molecules to be considered as virtual hits in the last iteration (for standard DD run on 11 iterations, we recommend 0.01)')
+```
+
+So, with that in mind - let's think about the "default" parameters here. We can simplify that statement: 
+
+`first_mols = int(1 * len(scores_val))`
+
+`last_mols = int(0.01 * len(scores_val))`
+
+Now we need `scores_val`. 
+
+That is set a little earlier in the script, it uses the validation_labels.txt in iteration 1 and does not change. 
+
+```py
+scores_val = []
+with open(DATA_PATH+'/iteration_'+str(1)+'/validation_labels.txt','r') as ref:
+    ref.readline()  # first line is ignored
+    for line in ref:
+        scores_val.append(float(line.rstrip().split(',')[0]))
+
+scores_val = np.array(scores_val)
+```
+Let's again assume default parameters and say we have 1,000,000 (1M) molecules in our validation set. The first line is assumed to be the header, so we can ignore it. 
+
+Now, we can simplify again and do the arthimetic: 
+
+`first_mols = int(1 * 1,000,000) = 1,000,000`
+`last_mols = int(0.01 * 1,000,000) = 10,000`
+
+Now, let's return to `good_mol`:
+
+```py
+good_mol = int(((last_mols-first_mols)*n_it + titr*first_mols-last_mols)/(titr-1)) # linear decrease as iterations increase
+```
+
+Let's assume we are on iteration 1 and substitute in our values:
+
+`good_mol = int(((10,000 - 1,000,000) * 1 + 11 * 1,000,000 - 10,000)/(11-1))`
+
+This simplifies down to (I think, just ran it through WolframAlpha): 1,000,000 (1M)
+
+However, this never actually runs when `n_it == 1` because of the `if` statement we saw earlier!
+
+So, let's assume we are on iteration 2. 
+
+`good_mol = int(((10,000 - 1,000,000) * 2 + 11 * 1,000,000 - 10,000)/(11-1))`
+
+This simplifies down to: 901,000. This is 90.1% of the original data set, but I did expect it to be an even 90%. Perhaps this will make sense later. Let's quickly make a table of n_it and good_mol:
+
+| n_it | good_mol |
+|------|----------|
+| 1    | 1,000,000 |
+| 2    | 901,000 |
+| 3    | 802,000 |
+| 4    | 703,000 |
+| 5    | 604,000 |
+| 6    | 505,000 |
+| 7    | 406,000 |
+| 8    | 307,000 |
+| 9    | 208,000 |
+| 10?   | 109,000? |
+
+We also have a special condition regarding if it is the last iteration. The syntax/word choice here I am using is probably a little wrong, as I I feel like by n_it == 10, we are on the last iteration. So it will trigger there. 
+
+So I think it will be: 
+
+| n_it | good_mol |
+|------|----------|
+| 10   | 10,000   |
+
+```py
+print(isl)
+#If this is the last iteration then we save only 100 molecules
+if isl == 'True':
+    good_mol = 100 if percent_last_mols == -1.0 else int(percent_last_mols * len(scores_val))
+```
+
+The comment is probably wrong, as you can set `percent_last_mols` to a number other than 0.01 and your `scores_val` maybe a different value than 1,000,000. But either way, the logic does make sense, so let's continue on. 
+
+Something I just noticed and forgot however is this: 
+
+```py
+percent_first_mols = float(io_args.percent_first_mols)/100
+percent_last_mols = float(io_args.percent_last_mols)/100
+```
+So, we are dividing by 100. So, let's update our table (keep in mind n_it == 1 is a special case):
+
+| n_it | good_mol |
+|------|----------|
+| 1    | 1,000,000 |
+| 2    | 9,010 |
+| 3    | 8,020 |
+| 4    | 7,030 |
+| 5    | 6,040 |
+| 6    | 5,050 |
+| 7    | 4,060 |
+| 8    | 3,070 |
+| 9    | 2,080 |
+| 10?   | 1,090? |
+| 10 (isl=True)  | 100 |
+
+I'll have to rewrite this section later, I just don't want to get hung up on that now. But because `percent_first/last_mols` are divided by 100, the earlier arithmetic that governs `first/last_mol` should have been divided by 100:
+
+```py
+first_mols = int(100*t_mol/13) if percent_first_mols == -1.0 else int(percent_first_mols * len(scores_val))
+
+print(first_mols)
+
+last_mols = 100 if percent_last_mols == -1.0 else int(percent_last_mols * len(scores_val))
+```
+
+So here it would have been: 
+
+`first_mols = int(0.01 * len(scores_val)) = 10,000`
+`last_mols = int(0.0001 * len(scores_val)) = 100`
+
+Then, when we get to `good_mol` we would have: 
+
+`good_mol = int(((100 - 10,000) * 1 + 11 * 10,000 - 100)/(11-1)) = 10,000`
+
+Again, this doesn't actually trigger when `n_it == 1` because of the `if` statement. So let's evaluate when `n_it == 2`:
+
+`good_mol = int(((100 - 10,000) * 2 + 11 * 10,000 - 100)/(11-1)) = 9,010`
+
+Now we get to the next block of code: 
+
+```py
+cf_start = np.mean(scores_val)  # the mean of all the docking scores (labels) of the validation set:
+t_good = len(scores_val)
+```
+
+Pretty straightforward.
+
+Now the next chunk of code is a `while` loop. 
+```py
+# we decrease the threshold value until we have our desired num of mol left.
+while t_good > good_mol: 
+    cf_start -= 0.005
+    t_good = len(scores_val[scores_val<cf_start])
+```
+New operator I haven't seen: 
+
+`cf_start -= 0.005` is equivalent to: 
+`cf_start = cf_start - 0.005`
+
+So remember again that `scores_val` is a constant. So, let's walk through this loop. 
+
+In iteration 1, we have: 
+
+`t_good` = 1,000,000
+`good_mol` = 1,000,000
+
+Right now, `t_good` is *not* greater than `good_mol` so we do not enter the loop. 
+
+In iteration 2, we have:
+
+`t_good` = 1,000,000
+`good_mol` = 9,010
+
+Now, `t_good` is greater than `good_mol` so we enter the loop. 
+
+`cf_start` is set to the mean of `scores_val`, let's just pretend that the average is `-5.0` for now. 
+
+So we will subtract `0.005` from `-5.0` and get `-5.005` (a better docking score). 
+
+Then we will set `t_good` to the number of elements in `scores_val` that are less than `-5.005`. 
+
+So, let's say that there are 9,000 elements in `scores_val` that are less than `-5.005`. 
+
+So, we will set `t_good` to 9,000 as exit the while loop and print the results:
+
+```py
+print('Threshold (cutoff):',cf_start)
+print('Molec under threshold:', t_good)
+print('Goal molec:', good_mol)
+print('Total molec:', len(scores_val))
+```
+
+So, we will get: 
+
+```
+Threshold (cutoff): -5.005
+Molec under threshold: 9,000
+Goal molec: 9,010
+Total molec: 1,000,000
+```
+I am a little confused on t_good versus good_mol, but maybe the word "goal" is tripping me up. 
+
+This again stresses to me that these scripts should be outputting logs associated with them and saved to an appropriate place, where the logs are these print statements (and the command that was executed). 
+
+Now we get to the hyperparameter section. 
+
+```py
+all_hyperparas = []
+
+for o in oss:   # Over Sample Size
+    for batch in bs:
+        for nu in num_units:
+            for do in dropout:
+                for lr in learn_rate:
+                    for ba in bin_array:
+                        for w in wt:    # Weight
+                            all_hyperparas.append([o,batch,nu,do,lr,ba,w,cf_start])
+
+print('Total hyp:', len(all_hyperparas))
+```
+I find this for loop pretty crazy but I think I understand at least what its trying to do. We are going to be appending a list of lists to `all_hyperparas` with all the combinations we can make within the for loops. 
+
+Next we have a pretty useful code snippet I'd like to remember. We are about to write out the hyperparameter combinations to a series of files that will run `progressive_docking.py` with them. But, `progressive_docking.py` also needs a set of arguments that don't change, so they are defined here: 
+
+```py
+other_args = ' '.join(extra_args) + '-rec {} -n_it {} -t_mol {} --data_path {} --save_path {} -n_mol {}'.format(rec, n_it, t_mol, DATA_PATH, SAVE_PATH, num_molec)
+print(other_args)
+```
+This will print out a string that looks like this:
+
+`-pfm 0.01 -plm 0.0001 -rec 0.5 -n_it 1 -t_mol 1000000 --data_path data/path/ --save_path also/data/path -n_mol 1000000`
+
+Then, we will use that when we get to the final section: 
+
+```py
+count = 1
+for i in range(len(all_hyperparas)):
+    with open(SAVE_PATH+'/iteration_'+str(n_it)+'/simple_job/simple_job_'+str(count)+'.sh', 'w') as ref:
+        ref.write('#!/bin/bash\n')
+        ref.write('#SBATCH --ntasks=1\n')
+        ref.write('#SBATCH --gres=gpu:1\n')
+        ref.write('#SBATCH --cpus-per-task=1\n')
+        ref.write('#SBATCH --job-name=phase_4\n')
+        ref.write('#SBATCH --mem=0               # memory per node\n')
+        ref.write('#SBATCH --partition=%s\n'%gpu_part)
+        ref.write('#SBATCH --time='+time_model+'            # time (DD-HH:MM)\n')
+        ref.write('\n')
+        cwd = os.getcwd()
+        ref.write('cd {}/scripts_2\n'.format(cwd))
+        hyp_args = '-os {} -bs {} -num_units {} -dropout {} -learn_rate {} -bin_array {} -wt {} -cf {}'.format(*all_hyperparas[i])
+        ref.write('source ~/.bashrc\n')
+        ref.write('conda activate %s\n'%env)
+        ref.write('python -u progressive_docking.py ' + hyp_args + ' ' + other_args)
+        ref.write("\n echo complete")
+    count += 1
+    
+print('Runtime:', time.time() - START_TIME)
+```
+
+Which get's us to the portion where we can now do the machine learning related stuff!
