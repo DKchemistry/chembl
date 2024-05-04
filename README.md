@@ -27,7 +27,7 @@ This benchmarking study is meant to serve as a proof of concept work for the int
 
 Two benchmarks (GPCR-Bench and LIT-PCBA) have been used as benchmarking sets for docking and strain methods. 
 
-GPCR-Bench is a benchmarking set of 24 GPCR targets with ~200 diverse, known actives and ~10,000 DUD-E decoys. The dataset was design by scientists at Heptares and is described here: [[GPCR-Bench: A Benchmarking Set and Practitioners’ Guide for G Protein-Coupled Receptor Docking](https://pubs.acs.org/doi/10.1021/acs.jcim.5b00660)]. The original data can be found at the following GitHub repository: [GPCR-Bench](https://github.com/dahliaweiss/GPCR-Bench)
+GPCR-Bench is a benchmarking set of 24 GPCR targets with ~200 diverse, known actives and ~10,000 DUD-E decoys. The dataset was design by scientists at Heptares and is described here: [GPCR-Bench: A Benchmarking Set and Practitioners’ Guide for G Protein-Coupled Receptor Docking](https://pubs.acs.org/doi/10.1021/acs.jcim.5b00660). The original data can be found at the following GitHub repository: [GPCR-Bench](https://github.com/dahliaweiss/GPCR-Bench)
 
 Protein grids were already prepared via Schrodinger's Protein Preparation Wizard. The ligands are protonated SMILES. Stereochemistry was enumerated using [MayaChemTools and rdkit](http://www.mayachemtools.org/docs/scripts/html/RDKitEnumerateStereoisomers.html), analagously to Deep Docking workflows. Ligands were prepared as 3D conformers using Schrodinger's LigPrep, allowing only the previously defined protomer and stereoisomer. 
 
