@@ -1,4 +1,4 @@
-# Project Title
+# Strain Metric Benchmarking
 
 Benchmarking the Utility of Strain Metrics in Structure Based Virtual Screening
 
